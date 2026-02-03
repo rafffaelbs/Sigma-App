@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:sigma_app/models/plant_model.dart';
+import 'package:sigma_app/screens/select_ufv.dart';
+import 'package:sigma_app/widgets/custom_header.dart';
+import 'package:sigma_app/widgets/plant_button.dart';
 
 // Temporary Dataset
 final List<Plant> plants = [
-  Plant(id: '1', name: 'CAIAPÔNIA'),
-  Plant(id: '2', name: 'PARANOÁ'),
-  Plant(id: '3', name: 'RIO BONITO'),
-  Plant(id: '4', name: 'RIO MONTE'),
+  Plant(id: '1', name: 'CAIAPÔNIA', ufvs: ['UFV 1.1', 'UFV 1.2', 'UFV 1.3', 'UFV 1.4']),
+  Plant(id: '2', name: 'PARANOÁ', ufvs: ['UFV 2.1', 'UFV 2.2', 'UFV 2.3', 'UFV 2.4']),
+  Plant(id: '3', name: 'RIO BONITO', ufvs: ['UFV 3.1', 'UFV 3.2', 'UFV 3.3', 'UFV 3.4']),
+  Plant(id: '4', name: 'RIO MONTE', ufvs: ['UFV 4.1', 'UFV 4.2', 'UFV 4.3', 'UFV 4.4']),
 ];
 
 class SelectPlant extends StatelessWidget {
@@ -21,29 +24,7 @@ class SelectPlant extends StatelessWidget {
         child: Column(
           children: [
             const SizedBox(height: 15),
-            Container(
-              color: Color(0xFFD9D9D9),
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-              child: Row(
-                children: [
-                  GestureDetector(
-                    onTap: () {
-                      Navigator.pop(context);
-                    },
-                    child: const Icon(Icons.arrow_back, color: Colors.black),
-                  ),
-                  const SizedBox(width: 20),
-                  const Text(
-                    'Selecione a Usina',
-                    style: TextStyle(
-                      fontSize: 25,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black,
-                    ),
-                  ),
-                ],
-              ),
-            ),
+            CustomHeader(title: 'Selecione a Usina'),
             Expanded(
               child: ListView.builder(
                 padding: const EdgeInsets.all(20),
@@ -53,39 +34,23 @@ class SelectPlant extends StatelessWidget {
 
                   return Padding(
                     padding: const EdgeInsets.only(bottom: 16),
-                    child: _buildPlantButton(context, plant),
+                    child: PlantButton(
+                      plant: plant,
+                      onTap: () => {
+                        print('Clicou na planta ${plant.name}'),
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => SelectUfv(plant: plant),
+                          ),
+                        ),
+                      },
+                    ),
                   );
                 },
               ),
             ),
           ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildPlantButton(BuildContext context, Plant plant) {
-    return Material(
-      color: Colors.grey[300],
-      borderRadius: BorderRadius.circular(12),
-      clipBehavior: Clip.hardEdge,
-      child: InkWell(
-        onTap: () {
-          print("Clickedon ${plant.name}");
-          // Nagita to other pages later
-        },
-        child: Container(
-          width: double.infinity,
-          padding: const EdgeInsets.symmetric(vertical: 16),
-          alignment: Alignment.center,
-          child: Text(
-            plant.name.toUpperCase(),
-            style: const TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 18,
-              color: Colors.black87,
-            ),
-          ),
         ),
       ),
     );
