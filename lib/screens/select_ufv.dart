@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:sigma_app/models/plant_model.dart';
+import 'package:sigma_app/screens/edit_ufv.dart';
 import 'package:sigma_app/widgets/custom_header.dart';
 import 'package:sigma_app/widgets/plant_button.dart';
 
@@ -49,6 +50,7 @@ class SelectUfv extends StatelessWidget {
                     child: UfvButton(
                       ufv: ufv,
                       onTap: () => {print('Clicou na UFV ${ufv}')},
+                      onConfigTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => EditUfv(plant: plant, ufv: ufv))),
                     ),
                   );
                 },
