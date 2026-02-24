@@ -1,15 +1,21 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:sigma_app/models/measurements.dart'; // Adjust path
+import 'package:sigma_app/models/measurements.dart';
+import 'package:sigma_app/services/upload_service.dart';
 import 'package:sigma_app/widgets/custom_header.dart';
+import 'package:sigma_app/widgets/equipments_dropdown.dart';
+import 'package:sigma_app/widgets/measurement_input_block.dart';
 
 class PhaseGroupEntryScreen extends StatefulWidget {
   final String title;
   final PhaseGroup phaseGroup;
+  final List<String> allowedUnits;
 
   const PhaseGroupEntryScreen({
     super.key,
     required this.title,
     required this.phaseGroup,
+    required this.allowedUnits,
   });
 
   @override
@@ -17,23 +23,28 @@ class PhaseGroupEntryScreen extends StatefulWidget {
 }
 
 class _PhaseGroupEntryScreenState extends State<PhaseGroupEntryScreen> {
-  // Controllers to handle text input
   late TextEditingController _faseAController;
   late TextEditingController _faseBController;
   late TextEditingController _faseCController;
+  String? _selectedEquip;
 
   @override
   void initState() {
     super.initState();
-    // Initialize with existing data if it exists
     _faseAController = TextEditingController(
-      text: widget.phaseGroup.faseA.value.toString(),
+      text: widget.phaseGroup.faseA.value > 0
+          ? widget.phaseGroup.faseA.value.toString()
+          : '',
     );
     _faseBController = TextEditingController(
-      text: widget.phaseGroup.faseB.value.toString(),
+      text: widget.phaseGroup.faseB.value > 0
+          ? widget.phaseGroup.faseB.value.toString()
+          : '',
     );
     _faseCController = TextEditingController(
-      text: widget.phaseGroup.faseC.value.toString(),
+      text: widget.phaseGroup.faseC.value > 0
+          ? widget.phaseGroup.faseC.value.toString()
+          : '',
     );
   }
 
@@ -45,22 +56,34 @@ class _PhaseGroupEntryScreenState extends State<PhaseGroupEntryScreen> {
     super.dispose();
   }
 
-  void _saveData() {
-    // Update the actual object in memory
-    widget.phaseGroup.faseA.value =
-        double.tryParse(_faseAController.text) ?? 0.0;
-    widget.phaseGroup.faseB.value =
-        double.tryParse(_faseBController.text) ?? 0.0;
-    widget.phaseGroup.faseC.value =
-        double.tryParse(_faseCController.text) ?? 0.0;
+  bool _isUploading = false; // Add this to your State class
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Valores salvos localmente!'),
-        backgroundColor: Colors.green,
-      ),
-    );
-    Navigator.pop(context); // Go back to the folder
+  Future<void> _saveData() async {
+    setState(() => _isUploading = true);
+    try {
+      // 1. Update values
+      widget.phaseGroup.faseA.value =
+          double.tryParse(_faseAController.text) ?? 0.0;
+      // ... same for B and C
+
+      // 2. Wrap phases in a temporary map for the service
+      final phaseMap = {
+        'Fase_A': widget.phaseGroup.faseA,
+        'Fase_B': widget.phaseGroup.faseB,
+        'Fase_C': widget.phaseGroup.faseC,
+      };
+
+      // 3. Let the service handle the logic
+      await UploadService.uploadGroupImages(
+        readings: phaseMap,
+        plantId: 'plant-001',
+        ufvId: 'ufv-001',
+      );
+
+      if (mounted) Navigator.pop(context);
+    } finally {
+      if (mounted) setState(() => _isUploading = false);
+    }
   }
 
   @override
@@ -71,57 +94,61 @@ class _PhaseGroupEntryScreenState extends State<PhaseGroupEntryScreen> {
         child: Column(
           children: [
             CustomHeader(title: widget.title),
-            SingleChildScrollView(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const SizedBox(height: 30),
-
-                  _buildInputRow('Fase A', _faseAController),
-                  _buildInputRow('Fase B', _faseBController),
-                  _buildInputRow('Fase C', _faseCController),
-
-                  const SizedBox(height: 40),
-                  SizedBox(
-                    width: double.infinity,
-                    height: 55,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.black,
-                      ),
-                      onPressed: _saveData,
-                      child: const Text(
-                        'Salvar Medição',
-                        style: TextStyle(fontSize: 18, color: Colors.white),
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Use the new custom widget! Passes the specific measurement object directly.
+                    MeasurementInputBlock(
+                      label: 'Fase A',
+                      measurementValue: widget.phaseGroup.faseA,
+                      controller: _faseAController,
+                      allowedUnits: widget.allowedUnits,
+                    ),
+                    MeasurementInputBlock(
+                      label: 'Fase B',
+                      measurementValue: widget.phaseGroup.faseB,
+                      controller: _faseBController,
+                      allowedUnits: widget.allowedUnits,
+                    ),
+                    MeasurementInputBlock(
+                      label: 'Fase C',
+                      measurementValue: widget.phaseGroup.faseC,
+                      controller: _faseCController,
+                      allowedUnits: widget.allowedUnits,
+                    ),
+                    EquipmentDropdown(
+                      measurementType:
+                          'Megohmetro', // Pass dynamically if needed
+                      selectedValue: _selectedEquip,
+                      onChanged: (val) {
+                        setState(() {
+                          _selectedEquip = val;
+                        });
+                      },
+                    ),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 55,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.black,
+                        ), // Optional color pop for the save button
+                        onPressed: _saveData,
+                        child: const Text(
+                          'Salvar Medições',
+                          style: TextStyle(fontSize: 18, color: Colors.white),
+                        ),
                       ),
                     ),
-                  ),
-                ],
+                    const SizedBox(height: 20),
+                  ],
+                ),
               ),
             ),
           ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildInputRow(String label, TextEditingController controller) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 20),
-      child: TextField(
-        controller: controller,
-        keyboardType: const TextInputType.numberWithOptions(decimal: true),
-        decoration: InputDecoration(
-          labelText: label,
-          border: const OutlineInputBorder(),
-          suffixIcon: IconButton(
-            icon: const Icon(Icons.camera_alt),
-            onPressed: () {
-              // TODO: Implement camera logic to save imageUrl to phaseGroup.faseX.imageUrl
-              print('Open camera for $label');
-            },
-          ),
         ),
       ),
     );

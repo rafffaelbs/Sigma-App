@@ -89,7 +89,8 @@ class UfvInstrumentsScreen extends StatelessWidget {
   // ==========================================
   void _openMegohmetroFolders(BuildContext context, Megohmetro meg) {
     List<FolderOption> folders = [];
-
+    final List<String> megUnits = ['TΩ', 'GΩ', 'MΩ', 'kΩ'];
+   
     if (meg.transformador.readings.isNotEmpty) {
       final prog = meg.transformador.getProgress();
       folders.add(
@@ -103,6 +104,7 @@ class UfvInstrumentsScreen extends StatelessWidget {
               builder: (_) => DynamicGroupEntryScreen(
                 title: 'Transformador',
                 dynamicGroup: meg.transformador,
+                allowedUnits: megUnits,
               ),
             ),
           ).then((_) => (context as Element).markNeedsBuild()),
@@ -124,6 +126,7 @@ class UfvInstrumentsScreen extends StatelessWidget {
             context,
             'Terminação Mufla',
             meg.terminacaoMufla,
+            megUnits
           ),
         ),
       );
@@ -145,6 +148,7 @@ class UfvInstrumentsScreen extends StatelessWidget {
   // ==========================================
   void _openMicroohmimetroFolders(BuildContext context, Microohmimetro micro) {
     List<FolderOption> folders = [];
+    final List<String> microUnits = ['mΩ', 'µΩ', 'Ω'];
 
     // 1. Transformador (DynamicGroup Map)
     if (micro.transformador.isNotEmpty) {
@@ -156,11 +160,11 @@ class UfvInstrumentsScreen extends StatelessWidget {
           title: 'Transformador', // Fixed title
           completedCount: completed,
           totalCount: micro.transformador.length,
-          // Using _openDynamicGroupMap instead of _openPhaseGroupMap
           onTap: () => _openDynamicGroupMap(
             context,
             'Transformador',
             micro.transformador,
+            microUnits
           ),
         ),
       );
@@ -181,6 +185,7 @@ class UfvInstrumentsScreen extends StatelessWidget {
             context,
             'Continuidade Malha',
             micro.continuidadeMalha,
+            microUnits
           ),
         ),
       );
@@ -198,7 +203,7 @@ class UfvInstrumentsScreen extends StatelessWidget {
           totalCount: micro.seccionadora.length,
           // This one correctly uses _openPhaseGroupMap!
           onTap: () =>
-              _openPhaseGroupMap(context, 'Seccionadora', micro.seccionadora),
+              _openPhaseGroupMap(context, 'Seccionadora', micro.seccionadora, microUnits),
         ),
       );
     }
@@ -218,6 +223,7 @@ class UfvInstrumentsScreen extends StatelessWidget {
             context,
             'Disjuntor Religador',
             micro.disjuntorReligador,
+            microUnits
           ),
         ),
       );
@@ -242,6 +248,7 @@ class UfvInstrumentsScreen extends StatelessWidget {
     BuildContext context,
     String title,
     Map<String, PhaseGroup> phaseMap,
+    List<String> allowedUnits,
   ) {
     List<FolderOption> options = phaseMap.entries.map((entry) {
       final prog = entry.value
@@ -257,6 +264,7 @@ class UfvInstrumentsScreen extends StatelessWidget {
               builder: (_) => PhaseGroupEntryScreen(
                 title: entry.key,
                 phaseGroup: entry.value,
+                allowedUnits: allowedUnits,
               ),
             ),
           ).then((_) => (context as Element).markNeedsBuild());
@@ -277,11 +285,11 @@ class UfvInstrumentsScreen extends StatelessWidget {
     BuildContext context,
     String title,
     Map<String, DynamicGroup> dynMap,
+    List<String> allowedUnits,
   ) {
     List<FolderOption> options = dynMap.entries.map((entry) {
       final prog = entry.value
           .getProgress(); // Calculate completion (e.g., 1/3)
-
       return FolderOption(
         title: entry.key,
         completedCount: prog.completed,
@@ -293,6 +301,7 @@ class UfvInstrumentsScreen extends StatelessWidget {
               builder: (_) => DynamicGroupEntryScreen(
                 title: entry.key,
                 dynamicGroup: entry.value,
+                allowedUnits: allowedUnits,
               ),
             ),
           ).then((_) => (context as Element).markNeedsBuild());

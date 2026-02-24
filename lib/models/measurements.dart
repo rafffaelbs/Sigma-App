@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 // ==========================================
 // 1. CORE HELPER CLASSES
 // ==========================================
@@ -10,22 +8,33 @@ class MeasurementValue {
   String measurementUnit;
   String imageUrl;
   String timestamp;
-  bool get isFilled => value > 0.0 || timestamp.isNotEmpty;
+  String environmentImageUrl;
+  String equipment;
+  double? latitude;
+  double? longitude;
+  bool get isFilled => value > 0.0 || imageUrl.isNotEmpty;
 
   MeasurementValue({
     this.value = 0.0,
     this.measurementUnit = "",
     this.imageUrl = "",
     this.timestamp = "",
+    this.environmentImageUrl = "",
+    this.equipment = "",
+    this.latitude,
+    this.longitude,
   });
 
   factory MeasurementValue.fromJson(Map<String, dynamic> json) {
     return MeasurementValue(
       value: (json['value'] ?? 0.0).toDouble(),
-      // Note: Kept your specific JSON key "measurmentUnit"
       measurementUnit: json['measurmentUnit'] ?? "",
       imageUrl: json['imageUrl'] ?? "",
+      environmentImageUrl: json['environmentImageUrl'] ?? "",
+      equipment: json['equipment'] ?? "",
       timestamp: json['timestamp'] ?? "",
+      latitude: json['latitude']?.toDouble(),
+      longitude: json['longitude']?.toDouble(),
     );
   }
 
@@ -35,6 +44,10 @@ class MeasurementValue {
       'measurmentUnit': measurementUnit,
       'imageUrl': imageUrl,
       'timestamp': timestamp,
+      'environmentImageUrl': environmentImageUrl,
+      'equipment': equipment,
+      'latitude': latitude,
+      'longitude': longitude,
     };
   }
 }
@@ -111,14 +124,14 @@ class PhaseGroup {
 /// Handles: "H1-H3", "Passo 1m", "Malha D=18/40", etc.
 class DynamicGroup {
   Map<String, MeasurementValue> readings;
-  String equipamento;
+  String equipment;
   bool get isFilled {
     if (readings.isEmpty) return false;
     // It's done if EVERY reading inside the group is filled
     return readings.values.every((reading) => reading.isFilled);
   }
 
-  DynamicGroup({required this.readings, this.equipamento = ""});
+  DynamicGroup({required this.readings, this.equipment = ""});
 
   factory DynamicGroup.fromJson(Map<String, dynamic> json) {
     var map = <String, MeasurementValue>{};
@@ -132,7 +145,7 @@ class DynamicGroup {
       }
     });
 
-    return DynamicGroup(readings: map, equipamento: eq);
+    return DynamicGroup(readings: map, equipment: eq);
   }
 
   Map<String, dynamic> toJson() {
@@ -143,7 +156,7 @@ class DynamicGroup {
       data[key] = value.toJson();
     });
 
-    data['Equipamento'] = equipamento;
+    data['Equipamento'] = equipment;
     return data;
   }
 }

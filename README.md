@@ -1,9 +1,10 @@
 # Melhorias
 
-- Fazer os botões teremum efeito de clique (squeeze)
-- Puxar Dados do Firebase ou criar um dataset manual
-- Quais informações das Usinas armazenar
 - Melhorar o design
 
-- Adicionar mais informações da UFV, Plant -> UFV -> Dados UFV
-- Pensar em como fazer a pagina editUfv, os dropdowns pre setados, salvar nas varaiveis, etc
+- Melhorar design de phase group e etc
+- Permitir que ao clicar na camera abra a camera do usuario e ele posso upar uma imagem
+- Pensar em como deixar os valores vazios para o usuario preencher
+- Fazer verificacao de imagem + valor para deixar como completo
+- Adicionar uma dropbox que permite o usuario colocar a medicao correta
+- Por fim pegar todos os dados que estao salvos localmente e criar um pdf

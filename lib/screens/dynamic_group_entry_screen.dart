@@ -1,15 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:sigma_app/models/measurements.dart';
+import 'package:sigma_app/services/upload_service.dart';
 import 'package:sigma_app/widgets/custom_header.dart';
+import 'package:sigma_app/widgets/equipments_dropdown.dart';
+import 'package:sigma_app/widgets/measurement_input_block.dart';
 
 class DynamicGroupEntryScreen extends StatefulWidget {
   final String title;
   final DynamicGroup dynamicGroup;
+  final List<String> allowedUnits;
 
   const DynamicGroupEntryScreen({
     super.key,
     required this.title,
     required this.dynamicGroup,
+    required this.allowedUnits,
   });
 
   @override
@@ -18,18 +23,22 @@ class DynamicGroupEntryScreen extends StatefulWidget {
 }
 
 class _DynamicGroupEntryScreenState extends State<DynamicGroupEntryScreen> {
-  // A map to hold controllers dynamically based on whatever keys Firebase provides
   final Map<String, TextEditingController> _controllers = {};
+  bool _isUploading = false;
+
+  // Track the selected equipment in the local state
+  String? _selectedEquipment;
 
   @override
   void initState() {
     super.initState();
-    // Create a text controller for every reading found in the Firebase data
     widget.dynamicGroup.readings.forEach((key, measurement) {
       _controllers[key] = TextEditingController(
         text: measurement.value.toString(),
       );
     });
+    // Initialize if model already has a value
+    _selectedEquipment = widget.dynamicGroup.equipment;
   }
 
   @override
@@ -40,20 +49,33 @@ class _DynamicGroupEntryScreenState extends State<DynamicGroupEntryScreen> {
     super.dispose();
   }
 
-  void _saveData() {
-    // Save all values back to the memory object
-    _controllers.forEach((key, controller) {
-      widget.dynamicGroup.readings[key]?.value =
-          double.tryParse(controller.text) ?? 0.0;
-    });
+  Future<void> _saveData() async {
+    if (_selectedEquipment == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Por favor, selecione o equipamento.')),
+      );
+      return;
+    }
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Valores salvos localmente!'),
-        backgroundColor: Colors.green,
-      ),
-    );
-    Navigator.pop(context);
+    setState(() => _isUploading = true);
+    try {
+      _controllers.forEach((key, controller) {
+        widget.dynamicGroup.readings[key]?.value =
+            double.tryParse(controller.text) ?? 0.0;
+        // Pass the equipment down to each reading for the watermark
+        widget.dynamicGroup.readings[key]?.equipment = _selectedEquipment!;
+      });
+
+      await UploadService.uploadGroupImages(
+        readings: widget.dynamicGroup.readings,
+        plantId: 'plant-001',
+        ufvId: 'ufv-001',
+      );
+
+      if (mounted) Navigator.pop(context);
+    } finally {
+      if (mounted) setState(() => _isUploading = false);
+    }
   }
 
   @override
@@ -69,26 +91,50 @@ class _DynamicGroupEntryScreenState extends State<DynamicGroupEntryScreen> {
               child: ListView(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 children: [
-                  // Dynamically build text fields for each reading (e.g., "At Bt", "H1-H3")
                   ..._controllers.entries.map(
-                    (entry) => _buildInputRow(entry.key, entry.value),
+                    (entry) => MeasurementInputBlock(
+                      label: entry.key,
+                      measurementValue:
+                          widget.dynamicGroup.readings[entry.key]!,
+                      controller: entry.value,
+                      allowedUnits: widget.allowedUnits,
+                    ),
                   ),
-
-                  const SizedBox(height: 40),
+                  // FIXED DROPBOX INTEGRATION
+                  EquipmentDropdown(
+                    // Using widget.title or a specific type property to filter
+                    measurementType: widget.title.contains('Megômetro')
+                        ? 'Megohmetro'
+                        : 'Microohmimetro',
+                    selectedValue: _selectedEquipment,
+                    onChanged: (val) {
+                      setState(() {
+                        _selectedEquipment = val;
+                      });
+                    },
+                  ),
                   SizedBox(
                     width: double.infinity,
                     height: 55,
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.black,
+                        backgroundColor: _isUploading
+                            ? Colors.grey
+                            : Colors.black,
                       ),
-                      onPressed: _saveData,
-                      child: const Text(
-                        'Salvar Medição',
-                        style: TextStyle(fontSize: 18, color: Colors.white),
-                      ),
+                      onPressed: _isUploading ? null : _saveData,
+                      child: _isUploading
+                          ? const CircularProgressIndicator(color: Colors.white)
+                          : const Text(
+                              'Salvar Medição',
+                              style: TextStyle(
+                                fontSize: 18,
+                                color: Colors.white,
+                              ),
+                            ),
                     ),
                   ),
+                  const SizedBox(height: 40),
                 ],
               ),
             ),
@@ -97,22 +143,22 @@ class _DynamicGroupEntryScreenState extends State<DynamicGroupEntryScreen> {
       ),
     );
   }
+}
 
-  Widget _buildInputRow(String label, TextEditingController controller) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 20),
-      child: TextField(
-        controller: controller,
-        keyboardType: const TextInputType.numberWithOptions(decimal: true),
-        decoration: InputDecoration(
-          labelText: label,
-          border: const OutlineInputBorder(),
-          suffixIcon: IconButton(
-            icon: const Icon(Icons.camera_alt),
-            onPressed: () => print('Open camera for $label'),
-          ),
+Widget _buildInputRow(String label, TextEditingController controller) {
+  return Padding(
+    padding: const EdgeInsets.only(bottom: 20),
+    child: TextField(
+      controller: controller,
+      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+      decoration: InputDecoration(
+        labelText: label,
+        border: const OutlineInputBorder(),
+        suffixIcon: IconButton(
+          icon: const Icon(Icons.camera_alt),
+          onPressed: () => print('Open camera for $label'),
         ),
       ),
-    );
-  }
+    ),
+  );
 }
