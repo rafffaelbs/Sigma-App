@@ -8,3 +8,8 @@
 - Fazer verificacao de imagem + valor para deixar como completo
 - Adicionar uma dropbox que permite o usuario colocar a medicao correta
 - Por fim pegar todos os dados que estao salvos localmente e criar um pdf
+
+- Verificar se esta sendo feito o upload para o Firebase
+- Adicionar dados para as outras medições como ttr, etc
+- Adicionar Equipamento "Outro"
+- Verificar o fluxo

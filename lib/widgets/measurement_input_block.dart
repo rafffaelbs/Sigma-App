@@ -60,29 +60,30 @@ class MeasurementInputBlock extends StatefulWidget {
 class _MeasurementInputBlockState extends State<MeasurementInputBlock> {
   final ImagePicker _picker = ImagePicker();
 
-Future<void> _takePhoto(bool isEnvironment) async {
-  // Push the custom camera screen
-  final File? result = await Navigator.push<File>(
-    context,
-    MaterialPageRoute(
-      builder: (context) => CustomCameraScreen(allowedUnits: widget.allowedUnits),
-    ),
-  );
+  Future<void> _takePhoto(bool isEnvironment) async {
+    // Push the custom camera screen
+    final File? result = await Navigator.push<File>(
+      context,
+      MaterialPageRoute(
+        builder: (context) =>
+            CustomCameraScreen(allowedUnits: widget.allowedUnits),
+      ),
+    );
 
-  if (result != null) {
-    // The result is already cropped and watermarked!
-    setState(() {
-      if (isEnvironment) {
-        widget.measurementValue.environmentImageUrl = result.path;
-      } else {
-        widget.measurementValue.imageUrl = result.path;
-      }
-    });
-    
-    // Save to gallery if needed
-    await Gal.putImage(result.path);
+    if (result != null) {
+      // The result is already cropped and watermarked!
+      setState(() {
+        if (isEnvironment) {
+          widget.measurementValue.environmentImageUrl = result.path;
+        } else {
+          widget.measurementValue.imageUrl = result.path;
+        }
+      });
+
+      // Save to gallery if needed
+      await Gal.putImage(result.path);
+    }
   }
-}
 
   void _removePhoto(bool isEnvironment) {
     setState(() {
@@ -241,14 +242,31 @@ Future<void> _takePhoto(bool isEnvironment) async {
         // The Photo
         ClipRRect(
           borderRadius: BorderRadius.circular(8),
-          child: Image.file(
-            File(imagePath),
-            width: double.infinity,
-            height: 250,
-            fit: BoxFit.cover,
-          ),
+          child: imagePath.startsWith('http')
+              ? Image.network(
+                  imagePath, // Uses the Firebase URL
+                  width: double.infinity,
+                  height: 250,
+                  fit: BoxFit.cover,
+                  loadingBuilder: (context, child, loadingProgress) {
+                    if (loadingProgress == null) return child;
+                    return const SizedBox(
+                      height: 250,
+                      child: Center(child: CircularProgressIndicator()),
+                    );
+                  },
+                  errorBuilder: (context, error, stackTrace) => const SizedBox(
+                    height: 250,
+                    child: Center(child: Icon(Icons.broken_image, size: 50)),
+                  ),
+                )
+              : Image.file(
+                  File(imagePath), // Uses the local phone file
+                  width: double.infinity,
+                  height: 250,
+                  fit: BoxFit.cover,
+                ),
         ),
-
         // Delete Button (Top Right)
         Positioned(
           top: 8,

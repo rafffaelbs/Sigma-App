@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:sigma_app/models/measurements.dart';
 import 'package:sigma_app/services/upload_service.dart';
@@ -11,11 +10,16 @@ class PhaseGroupEntryScreen extends StatefulWidget {
   final PhaseGroup phaseGroup;
   final List<String> allowedUnits;
 
+  final String plantId;
+  final String ufvId;
+
   const PhaseGroupEntryScreen({
     super.key,
     required this.title,
     required this.phaseGroup,
     required this.allowedUnits,
+    required this.plantId, // Require them in the constructor
+    required this.ufvId, // Require them in the constructor
   });
 
   @override
@@ -27,6 +31,7 @@ class _PhaseGroupEntryScreenState extends State<PhaseGroupEntryScreen> {
   late TextEditingController _faseBController;
   late TextEditingController _faseCController;
   String? _selectedEquip;
+  bool _isUploading = false;
 
   @override
   void initState() {
@@ -46,6 +51,7 @@ class _PhaseGroupEntryScreenState extends State<PhaseGroupEntryScreen> {
           ? widget.phaseGroup.faseC.value.toString()
           : '',
     );
+    _selectedEquip = widget.phaseGroup.equipamento;
   }
 
   @override
@@ -56,34 +62,30 @@ class _PhaseGroupEntryScreenState extends State<PhaseGroupEntryScreen> {
     super.dispose();
   }
 
-  bool _isUploading = false; // Add this to your State class
-
-  Future<void> _saveData() async {
-    setState(() => _isUploading = true);
-    try {
-      // 1. Update values
-      widget.phaseGroup.faseA.value =
-          double.tryParse(_faseAController.text) ?? 0.0;
-      // ... same for B and C
-
-      // 2. Wrap phases in a temporary map for the service
-      final phaseMap = {
-        'Fase_A': widget.phaseGroup.faseA,
-        'Fase_B': widget.phaseGroup.faseB,
-        'Fase_C': widget.phaseGroup.faseC,
-      };
-
-      // 3. Let the service handle the logic
-      await UploadService.uploadGroupImages(
-        readings: phaseMap,
-        plantId: 'plant-001',
-        ufvId: 'ufv-001',
+  void _saveData() {
+    // Notice we removed 'async' and 'Future'
+    // Basic validation before saving
+    if (_selectedEquip == null || _selectedEquip!.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Por favor, selecione o equipamento.')),
       );
-
-      if (mounted) Navigator.pop(context);
-    } finally {
-      if (mounted) setState(() => _isUploading = false);
+      return;
     }
+
+    // 1. Update values and equipment locally (this updates the main UFV object by reference)
+    widget.phaseGroup.faseA.value =
+        double.tryParse(_faseAController.text) ?? 0.0;
+    widget.phaseGroup.faseB.value =
+        double.tryParse(_faseBController.text) ?? 0.0;
+    widget.phaseGroup.faseC.value =
+        double.tryParse(_faseCController.text) ?? 0.0;
+    widget.phaseGroup.equipamento = _selectedEquip!;
+
+    // Note: The local image paths (/data/user/...) are ALREADY saved inside
+    // widget.phaseGroup by your MeasurementInputBlock when you take the photo!
+
+    // 2. Return to the previous screen and pass 'true' to signal a successful save
+    if (mounted) Navigator.pop(context, true);
   }
 
   @override
@@ -100,7 +102,6 @@ class _PhaseGroupEntryScreenState extends State<PhaseGroupEntryScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Use the new custom widget! Passes the specific measurement object directly.
                     MeasurementInputBlock(
                       label: 'Fase A',
                       measurementValue: widget.phaseGroup.faseA,
@@ -120,8 +121,7 @@ class _PhaseGroupEntryScreenState extends State<PhaseGroupEntryScreen> {
                       allowedUnits: widget.allowedUnits,
                     ),
                     EquipmentDropdown(
-                      measurementType:
-                          'Megohmetro', // Pass dynamically if needed
+                      measurementType: 'Megohmetro',
                       selectedValue: _selectedEquip,
                       onChanged: (val) {
                         setState(() {
@@ -134,13 +134,22 @@ class _PhaseGroupEntryScreenState extends State<PhaseGroupEntryScreen> {
                       height: 55,
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.black,
-                        ), // Optional color pop for the save button
-                        onPressed: _saveData,
-                        child: const Text(
-                          'Salvar Medições',
-                          style: TextStyle(fontSize: 18, color: Colors.white),
+                          backgroundColor: _isUploading
+                              ? Colors.grey
+                              : Colors.black,
                         ),
+                        onPressed: _isUploading ? null : _saveData,
+                        child: _isUploading
+                            ? const CircularProgressIndicator(
+                                color: Colors.white,
+                              )
+                            : const Text(
+                                'Salvar Medições',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  color: Colors.white,
+                                ),
+                              ),
                       ),
                     ),
                     const SizedBox(height: 20),

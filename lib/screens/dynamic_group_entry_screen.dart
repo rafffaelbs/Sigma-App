@@ -10,11 +10,16 @@ class DynamicGroupEntryScreen extends StatefulWidget {
   final DynamicGroup dynamicGroup;
   final List<String> allowedUnits;
 
+  final String plantId;
+  final String ufvId;
+
   const DynamicGroupEntryScreen({
     super.key,
     required this.title,
     required this.dynamicGroup,
     required this.allowedUnits,
+    required this.plantId,
+    required this.ufvId,
   });
 
   @override
@@ -34,7 +39,7 @@ class _DynamicGroupEntryScreenState extends State<DynamicGroupEntryScreen> {
     super.initState();
     widget.dynamicGroup.readings.forEach((key, measurement) {
       _controllers[key] = TextEditingController(
-        text: measurement.value.toString(),
+        text: measurement.value > 0 ? measurement.value.toString() : '',
       );
     });
     // Initialize if model already has a value
@@ -49,7 +54,8 @@ class _DynamicGroupEntryScreenState extends State<DynamicGroupEntryScreen> {
     super.dispose();
   }
 
-  Future<void> _saveData() async {
+  void _saveData() {
+    // Removed 'async' and 'Future'
     if (_selectedEquipment == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Por favor, selecione o equipamento.')),
@@ -57,25 +63,30 @@ class _DynamicGroupEntryScreenState extends State<DynamicGroupEntryScreen> {
       return;
     }
 
-    setState(() => _isUploading = true);
-    try {
-      _controllers.forEach((key, controller) {
-        widget.dynamicGroup.readings[key]?.value =
-            double.tryParse(controller.text) ?? 0.0;
-        // Pass the equipment down to each reading for the watermark
-        widget.dynamicGroup.readings[key]?.equipment = _selectedEquipment!;
-      });
+    // 1. Assign all the typed values and equipment to the local model
+    _controllers.forEach((key, controller) {
+      widget.dynamicGroup.readings[key]?.value =
+          double.tryParse(controller.text) ?? 0.0;
+      widget.dynamicGroup.readings[key]?.equipment = _selectedEquipment!;
+    });
+    widget.dynamicGroup.equipment =
+        _selectedEquipment!; // Save selected equipment to the model
+    // 2. VALIDATION: Check if any entered value is missing photos
+    bool hasMissingPhotos = widget.dynamicGroup.readings.values.any((reading) {
+      return reading.value > 0.0 && reading.imageUrl.isEmpty;
+    });
 
-      await UploadService.uploadGroupImages(
-        readings: widget.dynamicGroup.readings,
-        plantId: 'plant-001',
-        ufvId: 'ufv-001',
+    if (hasMissingPhotos) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Adicione fotos para todas as medições preenchidas.'),
+        ),
       );
-
-      if (mounted) Navigator.pop(context);
-    } finally {
-      if (mounted) setState(() => _isUploading = false);
+      return; // Stop the save process
     }
+
+    // 3. Return to the previous screen and pass 'true'
+    if (mounted) Navigator.pop(context, true);
   }
 
   @override

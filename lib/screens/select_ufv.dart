@@ -58,8 +58,10 @@ class _SelectUfvState extends State<SelectUfv> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) =>
-                                UfvInstrumentsScreen(ufv: ufv),
+                            builder: (context) => UfvInstrumentsScreen(
+                              ufv: ufv,
+                              plant: widget.plant,
+                            ),
                           ),
                         );
                       },

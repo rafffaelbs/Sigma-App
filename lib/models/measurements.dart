@@ -12,7 +12,12 @@ class MeasurementValue {
   String equipment;
   double? latitude;
   double? longitude;
-  bool get isFilled => value > 0.0 || imageUrl.isNotEmpty;
+
+  bool get isFilled {
+    bool hasValue = value > 0.0;
+    bool hasImage = imageUrl.trim().isNotEmpty && imageUrl != 'null';
+    return hasValue && hasImage;
+  }
 
   MeasurementValue({
     this.value = 0.0,
@@ -572,13 +577,6 @@ class InspectionProgress {
   int total;
 
   InspectionProgress({this.completed = 0, this.total = 0});
-}
-
-// --- 2. Update MeasurementValue ---
-extension MeasurementValueExtension on MeasurementValue {
-  // A reading is complete if a value is entered OR an image/timestamp exists
-  bool get isFilled =>
-      value > 0.0 || imageUrl.isNotEmpty || timestamp.isNotEmpty;
 }
 
 // --- 3. Update PhaseGroup ---

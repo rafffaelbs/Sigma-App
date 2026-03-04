@@ -76,21 +76,21 @@ class HomeScreen extends StatelessWidget {
       var paranoaMegohmetro = Megohmetro(
         transformador: DynamicGroup(
           readings: {
-            "At Bt": MeasurementValue(value: 5000, measurementUnit: "MOhm"),
-            "At Massa": MeasurementValue(value: 10000, measurementUnit: "MOhm"),
-            "Bt Massa": MeasurementValue(value: 10000, measurementUnit: "MOhm"),
+            "At Bt": MeasurementValue(),
+            "At Massa": MeasurementValue(),
+            "Bt Massa": MeasurementValue(),
           },
         ),
         terminacaoMufla: {
           "Mufla Poste": PhaseGroup(
-            faseA: MeasurementValue(value: 2000),
-            faseB: MeasurementValue(value: 2000),
-            faseC: MeasurementValue(value: 2000),
+            faseA: MeasurementValue(),
+            faseB: MeasurementValue(),
+            faseC: MeasurementValue(),
           ),
           "Mufla Entrada Cubiculo": PhaseGroup(
-            faseA: MeasurementValue(value: 3000),
-            faseB: MeasurementValue(value: 3000),
-            faseC: MeasurementValue(value: 3000),
+            faseA: MeasurementValue(),
+            faseB: MeasurementValue(),
+            faseC: MeasurementValue(),
           ),
         },
         paraRaios: {},
@@ -107,12 +107,12 @@ class HomeScreen extends StatelessWidget {
         transformador: {
           "AT Delta Estrela": DynamicGroup(
             readings: {
-              "H1-H3": MeasurementValue(value: 0.05, measurementUnit: "mOhm"),
+              "H1-H3": MeasurementValue(),
             },
           ),
           "BT Delta Estrela": DynamicGroup(
             readings: {
-              "X1-X0": MeasurementValue(value: 0.02, measurementUnit: "mOhm"),
+              "X1-X0": MeasurementValue(),
             },
           ),
         },
