@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:sigma_app/models/plant_model.dart';
 import 'package:sigma_app/models/measurements.dart';
@@ -5,6 +6,7 @@ import 'package:sigma_app/screens/dynamic_folder_screen.dart';
 import 'package:sigma_app/screens/phase_group_entry_screen.dart';
 import 'package:sigma_app/screens/dynamic_group_entry_screen.dart';
 import 'package:sigma_app/services/local_sync_service.dart';
+import 'package:sigma_app/services/pdf_service.dart';
 import 'package:sigma_app/widgets/custom_header.dart';
 import 'package:sigma_app/widgets/plant_button.dart';
 
@@ -17,6 +19,28 @@ class UfvInstrumentsScreen extends StatelessWidget {
     required this.ufv,
     required this.plant,
   });
+
+  bool _isInspectionFullyComplete(FullInspection inspection) {
+    final meg = inspection.megohmetro.getProgress();
+    final mic = inspection.microohmimetro.getProgress();
+    final ttr = inspection.ttr.getProgress();
+    final hip = inspection.hipot.getProgress();
+    final ter = inspection.terrometro.getProgress();
+    final toq = inspection.toquePasso.getProgress();
+
+    int totalItems =
+        meg.total + mic.total + ttr.total + hip.total + ter.total + toq.total;
+    int completedItems =
+        meg.completed +
+        mic.completed +
+        ttr.completed +
+        hip.completed +
+        ter.completed +
+        toq.completed;
+
+    // Must have at least 1 item, and all items must be complete
+    return totalItems > 0 && totalItems == completedItems;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -42,6 +66,8 @@ class UfvInstrumentsScreen extends StatelessWidget {
     final FullInspection inspection = ufv.measurements!;
     final megohmetroProgress = inspection.megohmetro.getProgress();
     final microohmimetroProgress = inspection.microohmimetro.getProgress();
+
+    final bool isComplete = _isInspectionFullyComplete(inspection);
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -95,6 +121,23 @@ class UfvInstrumentsScreen extends StatelessWidget {
           ],
         ),
       ),
+      floatingActionButton: isComplete
+          ? FloatingActionButton.extended(
+              onPressed: () async {
+                // Show a loading indicator in case images are large
+                ScaffoldMessenger.of(
+                  context,
+                ).showSnackBar(const SnackBar(content: Text('Gerando PDF...')));
+                await PdfService.generateAndSaveReport(ufv);
+              },
+              backgroundColor: Colors.black,
+              icon: const Icon(Icons.picture_as_pdf, color: Colors.white),
+              label: const Text(
+                'Criar Relatório',
+                style: TextStyle(color: Colors.white),
+              ),
+            )
+          : null, // Shows nothing if not 100% complete
     );
   }
 
