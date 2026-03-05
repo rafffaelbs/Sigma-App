@@ -12,9 +12,6 @@ class UploadService {
   ) async {
     // 1. Verifica se a foto realmente existe no celular
     if (!imageFile.existsSync()) {
-      print(
-        "ERRO UPLOAD: A foto local sumiu ou não existe neste caminho: ${imageFile.path}",
-      );
       return "";
     }
 

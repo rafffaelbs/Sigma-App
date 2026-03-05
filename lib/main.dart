@@ -6,10 +6,6 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
   runApp(
-    const MaterialApp(
-      // We point to the separated screen file
-      home: HomeScreen(),
-      debugShowCheckedModeBanner: false,
-    ),
+    const MaterialApp(home: HomeScreen(), debugShowCheckedModeBanner: false),
   );
 }

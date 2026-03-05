@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:sigma_app/models/measurements.dart';
-import 'package:sigma_app/services/upload_service.dart';
 import 'package:sigma_app/widgets/custom_header.dart';
 import 'package:sigma_app/widgets/equipments_dropdown.dart';
 import 'package:sigma_app/widgets/measurement_input_block.dart';
@@ -29,7 +28,7 @@ class DynamicGroupEntryScreen extends StatefulWidget {
 
 class _DynamicGroupEntryScreenState extends State<DynamicGroupEntryScreen> {
   final Map<String, TextEditingController> _controllers = {};
-  bool _isUploading = false;
+  final bool _isUploading = false;
 
   // Track the selected equipment in the local state
   String? _selectedEquipment;
@@ -154,22 +153,4 @@ class _DynamicGroupEntryScreenState extends State<DynamicGroupEntryScreen> {
       ),
     );
   }
-}
-
-Widget _buildInputRow(String label, TextEditingController controller) {
-  return Padding(
-    padding: const EdgeInsets.only(bottom: 20),
-    child: TextField(
-      controller: controller,
-      keyboardType: const TextInputType.numberWithOptions(decimal: true),
-      decoration: InputDecoration(
-        labelText: label,
-        border: const OutlineInputBorder(),
-        suffixIcon: IconButton(
-          icon: const Icon(Icons.camera_alt),
-          onPressed: () => print('Open camera for $label'),
-        ),
-      ),
-    ),
-  );
 }

@@ -21,53 +21,166 @@ Future<void> saveUfvToFirebase(UFV ufv) async {
 }
 
 // --- Make main() async ---
-Future<void> main() async {
-  // 1. Initialize Flutter and Firebase FIRST!
-  WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
+Future<void> uploadInitialDataToFirebase(BuildContext context) async {
+  // 1. Show a loading message
+  ScaffoldMessenger.of(context).showSnackBar(
+    const SnackBar(content: Text('Enviando dados para o Firebase...')),
+  );
 
-  // 2. Create the specific measurements for Paranoá
-  var paranoaMegohmetro = Megohmetro(
-    transformador: DynamicGroup(
-      readings: {"At Bt": MeasurementValue(), "At Massa": MeasurementValue()},
-    ),
-    terminacaoMufla: {
-      "Mufla Poste": PhaseGroup(
+  try {
+    var paranoaMegohmetro = Megohmetro(
+      // Transformador
+      transformador: DynamicGroup(
+        readings: {
+          "At Bt": MeasurementValue(),
+          "At Massa": MeasurementValue(),
+          "Bt Massa": MeasurementValue(),
+        },
+      ),
+      // Mufla - Poste
+      terminacaoMufla: {
+        "Mufla Poste": PhaseGroup(
+          faseA: MeasurementValue(),
+          faseB: MeasurementValue(),
+          faseC: MeasurementValue(),
+          faseReserva: MeasurementValue(),
+        ),
+        "Mufla Entrada Cubículo": PhaseGroup(
+          faseA: MeasurementValue(),
+          faseB: MeasurementValue(),
+          faseC: MeasurementValue(),
+          faseReserva: MeasurementValue(),
+        ),
+        "Mufla Saída Cubículo": PhaseGroup(
+          faseA: MeasurementValue(),
+          faseB: MeasurementValue(),
+          faseC: MeasurementValue(),
+          faseReserva: MeasurementValue(),
+        ),
+        "Mufla Transformador": PhaseGroup(
+          faseA: MeasurementValue(),
+          faseB: MeasurementValue(),
+          faseC: MeasurementValue(),
+          faseReserva: MeasurementValue(),
+        ),
+      },
+      paraRaios: {
+        "Para Raios Poste": PhaseGroup(
+          faseA: MeasurementValue(),
+          faseB: MeasurementValue(),
+          faseC: MeasurementValue(),
+        ),
+        "Para Raios Entrada Cubículo": PhaseGroup(
+          faseA: MeasurementValue(),
+          faseB: MeasurementValue(),
+          faseC: MeasurementValue(),
+        ),
+        "Para Raios Saída Cubículo": PhaseGroup(
+          faseA: MeasurementValue(),
+          faseB: MeasurementValue(),
+          faseC: MeasurementValue(),
+        ),
+        "Para Raios Transformador": PhaseGroup(
+          faseA: MeasurementValue(),
+          faseB: MeasurementValue(),
+          faseC: MeasurementValue(),
+        ),
+      },
+      seccionadora: {
+        "Seccionadora 01": PhaseGroup(
+          faseA: MeasurementValue(),
+          faseB: MeasurementValue(),
+          faseC: MeasurementValue(),
+        ),
+        "Seccionadora 02": PhaseGroup(
+          faseA: MeasurementValue(),
+          faseB: MeasurementValue(),
+          faseC: MeasurementValue(),
+        ),
+      },
+      disjuntorReligador: {
+        "Disjuntor Religador Aberto": PhaseGroup(
+          faseA: MeasurementValue(),
+          faseB: MeasurementValue(),
+          faseC: MeasurementValue(),
+        ),
+        "Disjuntor Religador Fechado": PhaseGroup(
+          faseA: MeasurementValue(),
+          faseB: MeasurementValue(),
+          faseC: MeasurementValue(),
+        ),
+      },
+      transformadorCorrente: PhaseGroup(
         faseA: MeasurementValue(),
         faseB: MeasurementValue(),
         faseC: MeasurementValue(),
       ),
-      "Mufla Entrada Cubiculo": PhaseGroup(
-        faseA: MeasurementValue(),
-        faseB: MeasurementValue(),
-        faseC: MeasurementValue(),
-      ),
-    },
-    paraRaios: {},
-    seccionadora: {},
-    disjuntorReligador: {},
-    transformadorCorrente: PhaseGroup(
-      faseA: MeasurementValue(),
-      faseB: MeasurementValue(),
-      faseC: MeasurementValue(),
-    ),
-  );
+    );
 
-  var paranoaMicro = Microohmimetro(
-    transformador: {
-      "AT Delta Estrela": DynamicGroup(readings: {"H1-H3": MeasurementValue()}),
-      "BT Delta Estrela": DynamicGroup(readings: {"X1-X0": MeasurementValue()}),
-    },
-    continuidadeMalha: {},
-    seccionadora: {},
-    disjuntorReligador: {},
-  );
+    var paranoaMicro = Microohmimetro(
+      transformador: {
+        "AT Delta-Estrela": DynamicGroup(
+          readings: {
+            "H1-H3": MeasurementValue(),
+            "H2-H1": MeasurementValue(),
+            "H3-H2": MeasurementValue(),
+          },
+        ),
+        "BT Delta-Estrela": DynamicGroup(
+          readings: {
+            "X1-X0": MeasurementValue(),
+            "X2-X0": MeasurementValue(),
+            "X3-X0": MeasurementValue(),
+          },
+        ),
+      },
+      continuidadeMalha: {
+        "Continuidade Subestação": DynamicGroup(
+          readings: {
+            "Cubículo/Malha": MeasurementValue(),
+            "Poste/Malha": MeasurementValue(),
+            "Cercamento/Malha": MeasurementValue(),
+          },
+        ),
+        "Continuidade Skid": DynamicGroup(
+          readings: {
+            "Transformador/Malha": MeasurementValue(),
+            "BEP/Malha": MeasurementValue(),
+            "Inversor/Malha": MeasurementValue(),
+          },
+        ),
+      },
+      seccionadora: {
+        "Seccionadora 01": PhaseGroup(
+          faseA: MeasurementValue(),
+          faseB: MeasurementValue(),
+          faseC: MeasurementValue(),
+        ),
+        "Seccionadora 02": PhaseGroup(
+          faseA: MeasurementValue(),
+          faseB: MeasurementValue(),
+          faseC: MeasurementValue(),
+        ),
+      },
+      disjuntorReligador: {
+        "Disjuntor Religador Fechado": PhaseGroup(
+          faseA: MeasurementValue(),
+          faseB: MeasurementValue(),
+          faseC: MeasurementValue(),
+        ),
+      },
+    );
 
-  var paranoaInspection = FullInspection(
-    megohmetro: paranoaMegohmetro,
-    microohmimetro: paranoaMicro,
-    ttr: Ttr(
-      transformador: {},
+    var paranoaTtr = Ttr(
+      transformador: {
+        "Delta-Estrela": DynamicGroup(
+          readings: {
+            "H1-H3 / X1-X0": MeasurementValue(),
+            "H2-H1 / X2-X0": MeasurementValue(),
+            "H3-H2 / X3-X0": MeasurementValue(),
+          },
+        ),
+      },
       transformadorPotencial: PhaseGroup(
         faseA: MeasurementValue(),
         faseB: MeasurementValue(),
@@ -78,25 +191,175 @@ Future<void> main() async {
         faseB: MeasurementValue(),
         faseC: MeasurementValue(),
       ),
-    ),
-    hipot: Hipot(tests: {}),
-    terrometro: Terrometro(
-      subestacao: DynamicGroup(readings: {}),
-      transformadores: {},
-    ),
-    toquePasso: ToquePasso(subestacao: {}, cercamento: {}, skid: {}),
-  );
+    );
 
-  var ufvParanoa = UFV(
-    id: "ufv-001",
-    name: "UFV Paranoá",
-    nSerie: "WEG-998877",
-    potenciaKva: 2500,
-    measurements: paranoaInspection,
-  );
+    var paranoaHipot = Hipot(
+      caboMediaTensao: {
+        "Poste Cubículo": PhaseGroup(
+          faseA: MeasurementValue(),
+          faseB: MeasurementValue(),
+          faseC: MeasurementValue(),
+          faseReserva: MeasurementValue(),
+        ),
+        "Cubículo Transformador": PhaseGroup(
+          faseA: MeasurementValue(),
+          faseB: MeasurementValue(),
+          faseC: MeasurementValue(),
+          faseReserva: MeasurementValue(),
+        ),
+      },
+    );
 
-  print("Created ${ufvParanoa.name}");
-  // 3. ACTUALLY CALL THE FUNCTION to send it to Firebase
-  print("Sending to Firebase...");
-  await saveUfvToFirebase(ufvParanoa);
+    var paranoaTerrometro = Terrometro(
+      subestacao: DynamicGroup(
+        readings: {
+          "Cubículo Malha D=18/40": MeasurementValue(),
+          "Cubículo Malha D=19/40": MeasurementValue(),
+          "Cubículo Malha D=20/40": MeasurementValue(),
+        },
+      ),
+      transformadores: {
+        "Transformador 01": DynamicGroup(
+          readings: {
+            "Transformador 01 - D=18/40": MeasurementValue(),
+            "Transformador 01 - D=19/40": MeasurementValue(),
+            "Transformador 01 - D=20/40": MeasurementValue(),
+          },
+        ),
+      },
+    );
+
+    var paranoaToquePasso = ToquePasso(
+      subestacao: {
+        "Cubículo Proteção Geral": DynamicGroup(
+          readings: {
+            "Toque": MeasurementValue(),
+            "Passo 1m": MeasurementValue(),
+            "Passo 5m": MeasurementValue(),
+          },
+        ),
+        "Cubículo Proteção Medição": DynamicGroup(
+          readings: {
+            "01 - Toque": MeasurementValue(),
+            "02 - Toque": MeasurementValue(),
+            "03 - Toque": MeasurementValue(),
+          },
+        ),
+      },
+      cercamento: {
+        "Portão Acesso": DynamicGroup(
+          readings: {
+            "Toque": MeasurementValue(),
+            "Passo 1m": MeasurementValue(),
+            "Passo 5m": MeasurementValue(),
+          },
+        ),
+        "Componentes": DynamicGroup(
+          readings: {
+            "Alambrado - Toque": MeasurementValue(),
+            "Gradil Interno - Toque": MeasurementValue(),
+            "Componentes Metálicos - Toque": MeasurementValue(),
+          },
+        ),
+      },
+      skid: {
+        "Transformador/QGBT": DynamicGroup(
+          readings: {
+            "Toque": MeasurementValue(),
+            "Passo 1m": MeasurementValue(),
+            "Passo 5m": MeasurementValue(),
+          },
+        ),
+        "Inversores": DynamicGroup(
+          readings: {
+            "Toque": MeasurementValue(),
+            "Passo 1m": MeasurementValue(),
+            "Passo 5m": MeasurementValue(),
+          },
+        ),
+        "Componentes Metálicos": DynamicGroup(
+          readings: {
+            "QGBT - Toque": MeasurementValue(),
+            "Quadro Bt - Toque": MeasurementValue(),
+            "Container Metálico - Toque": MeasurementValue(),
+            "Cercamento UFV - Toque": MeasurementValue(),
+            "Estrutura Fixação - Toque": MeasurementValue(),
+          },
+        ),
+        "Módulos": DynamicGroup(
+          readings: {
+            "Toque": MeasurementValue(),
+            "Passo 1m": MeasurementValue(),
+            "Passo 5m": MeasurementValue(),
+          },
+        ),
+      },
+    );
+
+    var paranoaInspection = FullInspection(
+      megohmetro: paranoaMegohmetro,
+      microohmimetro: paranoaMicro,
+      ttr: paranoaTtr,
+      hipot: paranoaHipot,
+      terrometro: paranoaTerrometro,
+      toquePasso: paranoaToquePasso,
+    );
+
+    var ufvParanoa = UFV(
+      id: 'UFV 1.1',
+      name: 'Paranoá UFV 1.1',
+      fechamento: 'Estrela',
+      marca: 'WEG',
+      nSerie: 'WEG-998877',
+      fatorK: 4,
+      tensaoPrimaria: 3800,
+      relacaoNominal: 24,
+      tensaoSecundaria: 1200,
+      potenciaKva: 1200,
+      impedancia: 20,
+      frequencia: 60,
+      peso: 200,
+      ip: 1,
+      dataFabricacao: '20/01/2020',
+      volumeOleo: 40,
+      measurements: paranoaInspection,
+    );
+
+    // --- NEW: Wrap the UFV inside a Plant object ---
+    var usinaParanoa = Plant(
+      id: 'Paranoá',
+      name: 'Usina Paranoá',
+      local: 'Brasilia - DF',
+      ufvs: [ufvParanoa], // Add the UFV to the plant's list
+    );
+
+    // 3. Save the PLANT to Firebase (which includes the UFVs inside it)
+    CollectionReference plantCollection = FirebaseFirestore.instance.collection(
+      'plants',
+    );
+
+    // We use usinaParanoa.toMap() instead of ufvParanoa.toMap()
+    await plantCollection.doc(usinaParanoa.id).set(usinaParanoa.toMap());
+
+    // 4. Show success message
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('${usinaParanoa.name} salva com sucesso!'),
+          backgroundColor: Colors.green,
+        ),
+      );
+    }
+  } catch (e) {
+    // 5. Show error message if it fails
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Erro ao salvar: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+    print("Failed to save to Firebase: $e");
+  }
 }

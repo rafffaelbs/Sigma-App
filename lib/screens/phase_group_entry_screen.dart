@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:sigma_app/models/measurements.dart';
-import 'package:sigma_app/services/upload_service.dart';
 import 'package:sigma_app/widgets/custom_header.dart';
 import 'package:sigma_app/widgets/equipments_dropdown.dart';
 import 'package:sigma_app/widgets/measurement_input_block.dart';
@@ -31,7 +30,7 @@ class _PhaseGroupEntryScreenState extends State<PhaseGroupEntryScreen> {
   late TextEditingController _faseBController;
   late TextEditingController _faseCController;
   String? _selectedEquip;
-  bool _isUploading = false;
+  final bool _isUploading = false;
 
   @override
   void initState() {

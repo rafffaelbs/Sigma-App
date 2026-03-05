@@ -373,18 +373,18 @@ class Ttr {
 }
 
 class Hipot {
-  Map<String, PhaseGroup> tests; // Poste Cubiculo, Cubiculo Trafo
+  Map<String, PhaseGroup> caboMediaTensao; // Poste Cubiculo, Cubiculo Trafo
 
-  Hipot({required this.tests});
+  Hipot({required this.caboMediaTensao});
 
   factory Hipot.fromJson(Map<String, dynamic> json) {
     // Hipot is flat in your JSON, so we just map the whole object
-    return Hipot(tests: _parseMapPhase(json));
+    return Hipot(caboMediaTensao: _parseMapPhase(json));
   }
 
   Map<String, dynamic> toJson() {
-    // Hipot tests map directly to the root of the Hipot JSON object
-    return tests.map((k, v) => MapEntry(k, v.toJson()));
+    // Hipot caboMediaTensao map directly to the root of the Hipot JSON object
+    return caboMediaTensao.map((k, v) => MapEntry(k, v.toJson()));
   }
 
   InspectionProgress getProgress() {
@@ -401,7 +401,7 @@ class Hipot {
       }
     }
 
-    countMap(tests);
+    countMap(caboMediaTensao);
 
     return InspectionProgress(completed: completed, total: total);
   }
@@ -579,7 +579,7 @@ class InspectionProgress {
   InspectionProgress({this.completed = 0, this.total = 0});
 }
 
-// --- 3. Update PhaseGroup ---
+// --- 2. Update PhaseGroup ---
 extension PhaseGroupProgress on PhaseGroup {
   InspectionProgress getProgress() {
     int total = 0;
@@ -612,7 +612,7 @@ extension PhaseGroupProgress on PhaseGroup {
   }
 }
 
-// --- 4. Update DynamicGroup ---
+// --- 3. Update DynamicGroup ---
 extension DynamicGroupProgress on DynamicGroup {
   InspectionProgress getProgress() {
     int total = readings.length;

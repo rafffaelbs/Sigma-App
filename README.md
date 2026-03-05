@@ -7,3 +7,5 @@
 - Adicionar dados para as outras medições como ttr, etc
 - Adicionar Equipamento "Outro"
 - Verificar o fluxo
+- Adicionar ao PDF informações da UFV e Usina, como fechamento, marca, nserie, etc
+- Conferir se ao editar os dados da UFV eles sao salvos corretamente

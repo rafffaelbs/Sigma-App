@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:sigma_app/models/plant_model.dart';
 import 'package:sigma_app/models/measurements.dart';
@@ -64,58 +63,105 @@ class UfvInstrumentsScreen extends StatelessWidget {
     }
 
     final FullInspection inspection = ufv.measurements!;
-    final megohmetroProgress = inspection.megohmetro.getProgress();
-    final microohmimetroProgress = inspection.microohmimetro.getProgress();
+    // Calculate all progress
+    final megProg = inspection.megohmetro.getProgress();
+    final micProg = inspection.microohmimetro.getProgress();
+    final ttrProg = inspection.ttr.getProgress();
+    final hipProg = inspection.hipot.getProgress();
+    final terProg = inspection.terrometro.getProgress();
+    final toqProg = inspection.toquePasso.getProgress();
 
     final bool isComplete = _isInspectionFullyComplete(inspection);
+
+    // HELPER FUNCTION: Only creates a button if the instrument has items to inspect
+    List<Widget> buildInstrumentButtons() {
+      List<Widget> buttons = [];
+
+      void addButton(
+        String title,
+        InspectionProgress prog,
+        Future<void> Function() onTap,
+      ) {
+        if (prog.total > 0) {
+          buttons.add(
+            Padding(
+              padding: const EdgeInsets.only(bottom: 16),
+              child: InspectionButton(
+                title: title,
+                completedCount: prog.completed,
+                totalCount: prog.total,
+                onTap: () async {
+                  await onTap();
+                  (context as Element)
+                      .markNeedsBuild(); // Refresh UI after returning
+                },
+              ),
+            ),
+          );
+        }
+      }
+
+      addButton(
+        'Megôhmetro',
+        megProg,
+        () => _openMegohmetroFolders(context, inspection.megohmetro),
+      );
+      addButton(
+        'Microohmímetro',
+        micProg,
+        () => _openMicroohmimetroFolders(context, inspection.microohmimetro),
+      );
+      addButton('TTR', ttrProg, () => _openTtrFolders(context, inspection.ttr));
+      addButton(
+        'Hipot',
+        hipProg,
+        () => _openHipotFolders(context, inspection.hipot),
+      );
+      addButton(
+        'Terrômetro',
+        terProg,
+        () => _openTerrometroFolders(context, inspection.terrometro),
+      );
+      addButton(
+        'Toque-Passo',
+        toqProg,
+        () => _openToquePassoFolders(context, inspection.toquePasso),
+      );
+
+      return buttons;
+    }
 
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
         child: Column(
           children: [
-            CustomHeader(title: 'Instrumentos: ${ufv.name}'),
+            CustomHeader(title: 'Instrumentos'),
+            SizedBox(height: 20),
+            Container(
+              margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 5),
+              width: double.infinity,
+              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: Color(0xFFFFFFFF),
+                border: Border.all(color: Colors.black, width: 1.5),
+              ),
+              child: Text(
+                ufv.name.toUpperCase(),
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18,
+                  color: Colors.black87,
+                ),
+              ),
+            ),
+
             const SizedBox(height: 20),
             Expanded(
               child: ListView(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
-                children: [
-                  // MEGOHMETRO BUTTON
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 16),
-                    child: InspectionButton(
-                      title: 'Megôhmetro',
-                      completedCount: megohmetroProgress.completed,
-                      totalCount: megohmetroProgress.total,
-                      onTap: () async {
-                        await _openMegohmetroFolders(
-                          context,
-                          inspection.megohmetro,
-                        );
-                        (context as Element)
-                            .markNeedsBuild(); // Refresh this root screen
-                      },
-                    ),
-                  ),
-
-                  // MICROOHMIMETRO BUTTON
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 16),
-                    child: InspectionButton(
-                      title: 'Microohmímetro',
-                      completedCount: microohmimetroProgress.completed,
-                      totalCount: microohmimetroProgress.total,
-                      onTap: () async {
-                        await _openMicroohmimetroFolders(
-                          context,
-                          inspection.microohmimetro,
-                        );
-                        (context as Element)
-                            .markNeedsBuild(); // Refresh this root screen
-                      },
-                    ),
-                  ),
-                ],
+                children: buildInstrumentButtons(),
               ),
             ),
           ],
@@ -218,7 +264,105 @@ class UfvInstrumentsScreen extends StatelessWidget {
               );
             }
 
-            // ADD MORE MEGOHMETRO FOLDERS HERE LATER (Para Raios, etc.)
+            if (meg.paraRaios.isNotEmpty) {
+              int completed = meg.paraRaios.values
+                  .where((e) => e.isFullyComplete)
+                  .length;
+              folders.add(
+                FolderOption(
+                  title: 'Para-Raios',
+                  completedCount: completed,
+                  totalCount: meg.paraRaios.length,
+                  onTap: () async {
+                    await _openPhaseGroupMap(
+                      context,
+                      'Para-Raios',
+                      meg.paraRaios,
+                      megUnits,
+                    );
+                    setFolderState(() {});
+                  },
+                ),
+              );
+            }
+
+            if (meg.seccionadora.isNotEmpty) {
+              int completed = meg.seccionadora.values
+                  .where((e) => e.isFullyComplete)
+                  .length;
+              folders.add(
+                FolderOption(
+                  title: 'Seccionadora',
+                  completedCount: completed,
+                  totalCount: meg.seccionadora.length,
+                  onTap: () async {
+                    await _openPhaseGroupMap(
+                      context,
+                      'Seccionadora',
+                      meg.seccionadora,
+                      megUnits,
+                    );
+                    setFolderState(() {});
+                  },
+                ),
+              );
+            }
+
+            if (meg.disjuntorReligador.isNotEmpty) {
+              int completed = meg.disjuntorReligador.values
+                  .where((e) => e.isFullyComplete)
+                  .length;
+              folders.add(
+                FolderOption(
+                  title: 'Disjuntor Religador',
+                  completedCount: completed,
+                  totalCount: meg.disjuntorReligador.length,
+                  onTap: () async {
+                    await _openPhaseGroupMap(
+                      context,
+                      'Disjuntor Religador',
+                      meg.disjuntorReligador,
+                      megUnits,
+                    );
+                    setFolderState(() {});
+                  },
+                ),
+              );
+            }
+
+            void addSinglePhaseGroup(String title, PhaseGroup group) {
+              final prog = group.getProgress();
+              folders.add(
+                FolderOption(
+                  title: title,
+                  completedCount: prog.completed,
+                  totalCount: prog.total,
+                  onTap: () async {
+                    final didSave = await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => PhaseGroupEntryScreen(
+                          title: title,
+                          phaseGroup: group,
+                          allowedUnits: megUnits,
+                          plantId: plant.id,
+                          ufvId: ufv.id,
+                        ),
+                      ),
+                    );
+                    if (didSave == true) {
+                      await LocalSyncService.saveUfvLocally(ufv);
+                      if (context.mounted) setFolderState(() {});
+                    }
+                  },
+                ),
+              );
+            }
+
+            addSinglePhaseGroup(
+              'Transformador de Corrente',
+              meg.transformadorCorrente,
+            );
 
             return DynamicFolderScreen(title: 'Megôhmetro', options: folders);
           },
@@ -335,6 +479,259 @@ class UfvInstrumentsScreen extends StatelessWidget {
               title: 'Microohmímetro',
               options: folders,
             );
+          },
+        ),
+      ),
+    );
+  }
+
+  // ==========================================
+  // LEVEL 2 ROUTING: TTR
+  // ==========================================
+  Future<void> _openTtrFolders(BuildContext context, Ttr ttr) async {
+    final List<String> ttrUnits = ['V/V', 'kV/V']; // Adjust units as needed
+
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (folderContext) => StatefulBuilder(
+          builder: (context, setFolderState) {
+            List<FolderOption> folders = [];
+
+            if (ttr.transformador.isNotEmpty) {
+              int completed = ttr.transformador.values
+                  .where((e) => e.isFullyComplete)
+                  .length;
+              folders.add(
+                FolderOption(
+                  title: 'Transformador',
+                  completedCount: completed,
+                  totalCount: ttr.transformador.length,
+                  onTap: () async {
+                    await _openDynamicGroupMap(
+                      context,
+                      'Transformador',
+                      ttr.transformador,
+                      ttrUnits,
+                    );
+                    setFolderState(() {});
+                  },
+                ),
+              );
+            }
+
+            // Transformador de Potencial and Corrente are single PhaseGroups
+            void addSinglePhaseGroup(String title, PhaseGroup group) {
+              final prog = group.getProgress();
+              folders.add(
+                FolderOption(
+                  title: title,
+                  completedCount: prog.completed,
+                  totalCount: prog.total,
+                  onTap: () async {
+                    final didSave = await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => PhaseGroupEntryScreen(
+                          title: title,
+                          phaseGroup: group,
+                          allowedUnits: ttrUnits,
+                          plantId: plant.id,
+                          ufvId: ufv.id,
+                        ),
+                      ),
+                    );
+                    if (didSave == true) {
+                      await LocalSyncService.saveUfvLocally(ufv);
+                      if (context.mounted) setFolderState(() {});
+                    }
+                  },
+                ),
+              );
+            }
+
+            addSinglePhaseGroup(
+              'Transformador de Potencial',
+              ttr.transformadorPotencial,
+            );
+            addSinglePhaseGroup(
+              'Transformador de Corrente',
+              ttr.transformadorCorrente,
+            );
+
+            return DynamicFolderScreen(title: 'TTR', options: folders);
+          },
+        ),
+      ),
+    );
+  }
+
+  // ==========================================
+  // LEVEL 2 ROUTING: HIPOT
+  // ==========================================
+  Future<void> _openHipotFolders(BuildContext context, Hipot hipot) async {
+    final List<String> hipotUnits = ['kV', 'V', 'µA', 'mA'];
+
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (folderContext) => StatefulBuilder(
+          builder: (context, setFolderState) {
+            List<FolderOption> folders = [];
+
+            if (hipot.caboMediaTensao.isNotEmpty) {
+              int completed = hipot.caboMediaTensao.values
+                  .where((e) => e.isFullyComplete)
+                  .length;
+              folders.add(
+                FolderOption(
+                  title: "Cabo Média Tensão",
+                  completedCount: completed,
+                  totalCount: hipot.caboMediaTensao.length,
+                  onTap: () async {
+                    await _openPhaseGroupMap(
+                      context,
+                      'Cabo Média Tensão',
+                      hipot.caboMediaTensao,
+                      hipotUnits,
+                    );
+                    setFolderState(() {});
+                  },
+                ),
+              );
+            }
+
+            return DynamicFolderScreen(title: 'Hipot', options: folders);
+          },
+        ),
+      ),
+    );
+  }
+
+  // ==========================================
+  // LEVEL 2 ROUTING: TERROMETRO
+  // ==========================================
+  Future<void> _openTerrometroFolders(
+    BuildContext context,
+    Terrometro ter,
+  ) async {
+    final List<String> terUnits = ['Ω', 'kΩ'];
+
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (folderContext) => StatefulBuilder(
+          builder: (context, setFolderState) {
+            List<FolderOption> folders = [];
+
+            // Subestacao is a single DynamicGroup
+            if (ter.subestacao.readings.isNotEmpty) {
+              final prog = ter.subestacao.getProgress();
+              folders.add(
+                FolderOption(
+                  title: 'Subestação',
+                  completedCount: prog.completed,
+                  totalCount: prog.total,
+                  onTap: () async {
+                    final didSave = await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => DynamicGroupEntryScreen(
+                          title: 'Subestação',
+                          dynamicGroup: ter.subestacao,
+                          allowedUnits: terUnits,
+                          plantId: plant.id,
+                          ufvId: ufv.id,
+                        ),
+                      ),
+                    );
+                    if (didSave == true) {
+                      await LocalSyncService.saveUfvLocally(ufv);
+                      if (context.mounted) setFolderState(() {});
+                    }
+                  },
+                ),
+              );
+            }
+
+            // Transformadores is a Map of DynamicGroups
+            if (ter.transformadores.isNotEmpty) {
+              int completed = ter.transformadores.values
+                  .where((e) => e.isFullyComplete)
+                  .length;
+              folders.add(
+                FolderOption(
+                  title: 'Transformadores',
+                  completedCount: completed,
+                  totalCount: ter.transformadores.length,
+                  onTap: () async {
+                    await _openDynamicGroupMap(
+                      context,
+                      'Transformadores',
+                      ter.transformadores,
+                      terUnits,
+                    );
+                    setFolderState(() {});
+                  },
+                ),
+              );
+            }
+
+            return DynamicFolderScreen(title: 'Terrômetro', options: folders);
+          },
+        ),
+      ),
+    );
+  }
+
+  // ==========================================
+  // LEVEL 2 ROUTING: TOQUE-PASSO
+  // ==========================================
+  Future<void> _openToquePassoFolders(
+    BuildContext context,
+    ToquePasso toq,
+  ) async {
+    final List<String> toqUnits = ['V', 'kV'];
+
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (folderContext) => StatefulBuilder(
+          builder: (context, setFolderState) {
+            List<FolderOption> folders = [];
+
+            void addDynamicMapGroup(
+              String title,
+              Map<String, DynamicGroup> groupMap,
+            ) {
+              if (groupMap.isNotEmpty) {
+                int completed = groupMap.values
+                    .where((e) => e.isFullyComplete)
+                    .length;
+                folders.add(
+                  FolderOption(
+                    title: title,
+                    completedCount: completed,
+                    totalCount: groupMap.length,
+                    onTap: () async {
+                      await _openDynamicGroupMap(
+                        context,
+                        title,
+                        groupMap,
+                        toqUnits,
+                      );
+                      setFolderState(() {});
+                    },
+                  ),
+                );
+              }
+            }
+
+            addDynamicMapGroup('Subestação', toq.subestacao);
+            addDynamicMapGroup('Cercamento / Abrigo', toq.cercamento);
+            addDynamicMapGroup('SKID', toq.skid);
+
+            return DynamicFolderScreen(title: 'Toque-Passo', options: folders);
           },
         ),
       ),

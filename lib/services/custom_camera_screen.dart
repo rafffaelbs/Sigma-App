@@ -42,6 +42,7 @@ class _CustomCameraScreenState extends State<CustomCameraScreen> {
       await _controller!.initialize();
       if (mounted) setState(() {});
     } catch (e) {
+      // ignore: avoid_print
       print("Camera initialization error: $e");
     }
   }
@@ -69,14 +70,16 @@ class _CustomCameraScreenState extends State<CustomCameraScreen> {
           ),
         ).listen((Position position) {
           if (mounted) setState(() => _currentPosition = position);
+          // ignore: avoid_print
         }, onError: (error) => print("GPS Stream Error: $error"));
   }
 
   Future<void> _takePicture() async {
     if (_controller == null ||
         !_controller!.value.isInitialized ||
-        _isTakingPicture)
+        _isTakingPicture) {
       return;
+    }
 
     setState(() => _isTakingPicture = true);
 
@@ -123,7 +126,6 @@ class _CustomCameraScreenState extends State<CustomCameraScreen> {
         String ts = DateTime.now().toString().substring(0, 16);
         String lat = position?.latitude.toString() ?? "N/A";
         String lon = position?.longitude.toString() ?? "N/A";
-        String watermarkText = "Data: $ts\nLat: $lat\nLon: $lon";
 
         List<String> lines = ["Lat: $lat", "Long: $lon", "Date: $ts"];
 
