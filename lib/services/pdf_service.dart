@@ -147,7 +147,7 @@ class PdfService {
   // ==========================================
   static void _addMegohmetroPages(pw.Document pdf, Megohmetro meg) {
     // 1. The Transformador (Dynamic Group)
-    if (meg.transformador.readings.isNotEmpty) {
+    if (meg.transformador != null) {
       pdf.addPage(
         pw.MultiPage(
           pageFormat: PdfPageFormat.a4,
@@ -166,7 +166,7 @@ class PdfService {
               pw.Header(level: 1, child: pw.Text('Equipamento: Transformador')),
             ];
 
-            meg.transformador.readings.forEach((key, measurement) {
+            meg.transformador?.readings.forEach((key, measurement) {
               content.add(pw.SizedBox(height: 10));
               content.add(
                 pw.Text(

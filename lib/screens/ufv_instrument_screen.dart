@@ -203,8 +203,8 @@ class UfvInstrumentsScreen extends StatelessWidget {
           builder: (context, setFolderState) {
             List<FolderOption> folders = [];
 
-            if (meg.transformador.readings.isNotEmpty) {
-              final prog = meg.transformador.getProgress();
+            if (meg.transformador != null) {
+              final prog = meg.transformador!.getProgress();
               folders.add(
                 FolderOption(
                   title: 'Transformador',
@@ -216,8 +216,9 @@ class UfvInstrumentsScreen extends StatelessWidget {
                       MaterialPageRoute(
                         builder: (_) => DynamicGroupEntryScreen(
                           title: 'Transformador',
-                          dynamicGroup: meg.transformador,
+                          dynamicGroup: meg.transformador!,
                           allowedUnits: megUnits,
+                          instrumentType: 'Megohmetro',
                           plantId: plant.id,
                           ufvId: ufv.id,
                         ),
@@ -255,6 +256,7 @@ class UfvInstrumentsScreen extends StatelessWidget {
                       'Terminação Mufla',
                       meg.terminacaoMufla,
                       megUnits,
+                      'Megohmetro',
                     );
                     setFolderState(
                       () {},
@@ -279,6 +281,7 @@ class UfvInstrumentsScreen extends StatelessWidget {
                       'Para-Raios',
                       meg.paraRaios,
                       megUnits,
+                      'Megohmetro',
                     );
                     setFolderState(() {});
                   },
@@ -301,6 +304,7 @@ class UfvInstrumentsScreen extends StatelessWidget {
                       'Seccionadora',
                       meg.seccionadora,
                       megUnits,
+                      'Megohmetro',
                     );
                     setFolderState(() {});
                   },
@@ -323,6 +327,7 @@ class UfvInstrumentsScreen extends StatelessWidget {
                       'Disjuntor Religador',
                       meg.disjuntorReligador,
                       megUnits,
+                      'Megohmetro',
                     );
                     setFolderState(() {});
                   },
@@ -347,6 +352,7 @@ class UfvInstrumentsScreen extends StatelessWidget {
                           allowedUnits: megUnits,
                           plantId: plant.id,
                           ufvId: ufv.id,
+                          instrumentType: 'Megohmetro',
                         ),
                       ),
                     );
@@ -359,10 +365,13 @@ class UfvInstrumentsScreen extends StatelessWidget {
               );
             }
 
-            addSinglePhaseGroup(
-              'Transformador de Corrente',
-              meg.transformadorCorrente,
-            );
+            if (meg.transformadorCorrente != null) {
+              addSinglePhaseGroup(
+                'Transformador de Corrente',
+                meg.transformadorCorrente!,
+              );
+            }
+
 
             return DynamicFolderScreen(title: 'Megôhmetro', options: folders);
           },
@@ -402,6 +411,7 @@ class UfvInstrumentsScreen extends StatelessWidget {
                       'Transformador',
                       micro.transformador,
                       microUnits,
+                      'Microohmimetro',
                     );
                     setFolderState(() {});
                   },
@@ -424,6 +434,7 @@ class UfvInstrumentsScreen extends StatelessWidget {
                       'Continuidade Malha',
                       micro.continuidadeMalha,
                       microUnits,
+                      'Microohmimetro',
                     );
                     setFolderState(() {});
                   },
@@ -446,6 +457,7 @@ class UfvInstrumentsScreen extends StatelessWidget {
                       'Seccionadora',
                       micro.seccionadora,
                       microUnits,
+                      'Microohmimetro',
                     );
                     setFolderState(() {});
                   },
@@ -468,6 +480,7 @@ class UfvInstrumentsScreen extends StatelessWidget {
                       'Disjuntor Religador',
                       micro.disjuntorReligador,
                       microUnits,
+                      'Microohmimetro',
                     );
                     setFolderState(() {});
                   },
@@ -513,6 +526,7 @@ class UfvInstrumentsScreen extends StatelessWidget {
                       'Transformador',
                       ttr.transformador,
                       ttrUnits,
+                      'TTR',
                     );
                     setFolderState(() {});
                   },
@@ -536,6 +550,7 @@ class UfvInstrumentsScreen extends StatelessWidget {
                           title: title,
                           phaseGroup: group,
                           allowedUnits: ttrUnits,
+                          instrumentType: 'TTR',
                           plantId: plant.id,
                           ufvId: ufv.id,
                         ),
@@ -550,15 +565,18 @@ class UfvInstrumentsScreen extends StatelessWidget {
               );
             }
 
-            addSinglePhaseGroup(
-              'Transformador de Potencial',
-              ttr.transformadorPotencial,
-            );
-            addSinglePhaseGroup(
-              'Transformador de Corrente',
-              ttr.transformadorCorrente,
-            );
-
+            if (ttr.transformadorPotencial != null) {
+              addSinglePhaseGroup(
+                'Transformador de Potencial',
+                ttr.transformadorPotencial!,
+              );
+            }
+            if (ttr.transformadorCorrente != null) {
+              addSinglePhaseGroup(
+                'Transformador de Corrente',
+                ttr.transformadorCorrente!,
+              );
+            }
             return DynamicFolderScreen(title: 'TTR', options: folders);
           },
         ),
@@ -594,6 +612,7 @@ class UfvInstrumentsScreen extends StatelessWidget {
                       'Cabo Média Tensão',
                       hipot.caboMediaTensao,
                       hipotUnits,
+                      'Hipot',
                     );
                     setFolderState(() {});
                   },
@@ -625,8 +644,8 @@ class UfvInstrumentsScreen extends StatelessWidget {
             List<FolderOption> folders = [];
 
             // Subestacao is a single DynamicGroup
-            if (ter.subestacao.readings.isNotEmpty) {
-              final prog = ter.subestacao.getProgress();
+            if (ter.subestacao != null) {
+              final prog = ter.subestacao!.getProgress();
               folders.add(
                 FolderOption(
                   title: 'Subestação',
@@ -638,8 +657,9 @@ class UfvInstrumentsScreen extends StatelessWidget {
                       MaterialPageRoute(
                         builder: (_) => DynamicGroupEntryScreen(
                           title: 'Subestação',
-                          dynamicGroup: ter.subestacao,
+                          dynamicGroup: ter.subestacao!,
                           allowedUnits: terUnits,
+                          instrumentType: 'Terrometro',
                           plantId: plant.id,
                           ufvId: ufv.id,
                         ),
@@ -670,6 +690,7 @@ class UfvInstrumentsScreen extends StatelessWidget {
                       'Transformadores',
                       ter.transformadores,
                       terUnits,
+                      'Terrometro',
                     );
                     setFolderState(() {});
                   },
@@ -719,6 +740,7 @@ class UfvInstrumentsScreen extends StatelessWidget {
                         title,
                         groupMap,
                         toqUnits,
+                        'Toque-Passo',
                       );
                       setFolderState(() {});
                     },
@@ -747,6 +769,7 @@ class UfvInstrumentsScreen extends StatelessWidget {
     String title,
     Map<String, PhaseGroup> phaseMap,
     List<String> allowedUnits,
+    String instrumentType,
   ) async {
     await Navigator.push(
       context,
@@ -767,6 +790,7 @@ class UfvInstrumentsScreen extends StatelessWidget {
                         title: entry.key,
                         phaseGroup: entry.value,
                         allowedUnits: allowedUnits,
+                        instrumentType: instrumentType,
                         plantId: plant.id,
                         ufvId: ufv.id,
                       ),
@@ -800,6 +824,7 @@ class UfvInstrumentsScreen extends StatelessWidget {
     String title,
     Map<String, DynamicGroup> dynMap,
     List<String> allowedUnits,
+    String instrumentType,
   ) async {
     await Navigator.push(
       context,
@@ -820,6 +845,7 @@ class UfvInstrumentsScreen extends StatelessWidget {
                         title: entry.key,
                         dynamicGroup: entry.value,
                         allowedUnits: allowedUnits,
+                        instrumentType: instrumentType,
                         plantId: plant.id,
                         ufvId: ufv.id,
                       ),

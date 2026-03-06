@@ -8,7 +8,7 @@ class DynamicGroupEntryScreen extends StatefulWidget {
   final String title;
   final DynamicGroup dynamicGroup;
   final List<String> allowedUnits;
-
+  final String instrumentType;
   final String plantId;
   final String ufvId;
 
@@ -17,6 +17,7 @@ class DynamicGroupEntryScreen extends StatefulWidget {
     required this.title,
     required this.dynamicGroup,
     required this.allowedUnits,
+    required this.instrumentType,
     required this.plantId,
     required this.ufvId,
   });
@@ -101,7 +102,7 @@ class _DynamicGroupEntryScreenState extends State<DynamicGroupEntryScreen> {
               child: ListView(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 children: [
-                  ..._controllers.entries.map(
+                  ..._controllers.entries.toList().reversed.map(
                     (entry) => MeasurementInputBlock(
                       label: entry.key,
                       measurementValue:
@@ -110,12 +111,8 @@ class _DynamicGroupEntryScreenState extends State<DynamicGroupEntryScreen> {
                       allowedUnits: widget.allowedUnits,
                     ),
                   ),
-                  // FIXED DROPBOX INTEGRATION
                   EquipmentDropdown(
-                    // Using widget.title or a specific type property to filter
-                    measurementType: widget.title.contains('Megômetro')
-                        ? 'Megohmetro'
-                        : 'Microohmimetro',
+                    measurementType: widget.instrumentType,
                     selectedValue: _selectedEquipment,
                     onChanged: (val) {
                       setState(() {

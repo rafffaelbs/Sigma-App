@@ -171,49 +171,73 @@ class DynamicGroup {
 // ==========================================
 
 class Megohmetro {
-  DynamicGroup
-  transformador; // Using dynamic because keys are "At Bt", "At Massa"
+  DynamicGroup? transformador;
+  PhaseGroup? transformadorCorrente;
   Map<String, PhaseGroup> terminacaoMufla;
   Map<String, PhaseGroup> paraRaios;
   Map<String, PhaseGroup> seccionadora;
   Map<String, PhaseGroup> disjuntorReligador;
-  PhaseGroup transformadorCorrente;
 
   Megohmetro({
-    required this.transformador,
-    required this.terminacaoMufla,
-    required this.paraRaios,
-    required this.seccionadora,
-    required this.disjuntorReligador,
-    required this.transformadorCorrente,
-  });
+    this.transformador,
+    this.transformadorCorrente,
+
+    Map<String, PhaseGroup>? terminacaoMufla,
+    Map<String, PhaseGroup>? paraRaios,
+    Map<String, PhaseGroup>? seccionadora,
+    Map<String, PhaseGroup>? disjuntorReligador,
+  }) : terminacaoMufla = terminacaoMufla ?? {},
+       paraRaios = paraRaios ?? {},
+       seccionadora = seccionadora ?? {},
+       disjuntorReligador = disjuntorReligador ?? {};
 
   factory Megohmetro.fromJson(Map<String, dynamic> json) {
     return Megohmetro(
-      transformador: DynamicGroup.fromJson(json['Transformador'] ?? {}),
+      transformador: json['Transformador'] != null
+          ? DynamicGroup.fromJson(json['Transformador'])
+          : null,
       terminacaoMufla: _parseMapPhase(json['Terminacao Mufla']),
       paraRaios: _parseMapPhase(json['Para Raios']),
       seccionadora: _parseMapPhase(json['Seccionadora']),
       disjuntorReligador: _parseMapPhase(json['Disjuntor Religador']),
-      transformadorCorrente: PhaseGroup.fromJson(
-        json['Transformador Corrente'] ?? {},
-      ),
+      transformadorCorrente: json['Transformador Corrente'] != null
+          ? PhaseGroup.fromJson(json['Transformador Corrente'])
+          : null,
     );
   }
 
   Map<String, dynamic> toJson() {
-    return {
-      'Transformador': transformador.toJson(),
-      'Terminacao Mufla': terminacaoMufla.map(
+    final Map<String, dynamic> data = {};
+
+    // Only add objects if they are NOT null
+    if (transformador != null) {
+      data['Transformador'] = transformador!.toJson();
+    }
+    if (transformadorCorrente != null) {
+      data['Transformador Corrente'] = transformadorCorrente!.toJson();
+    }
+
+    // Only add maps if they are NOT empty
+    if (terminacaoMufla.isNotEmpty) {
+      data['Terminacao Mufla'] = terminacaoMufla.map(
         (k, v) => MapEntry(k, v.toJson()),
-      ),
-      'Para Raios': paraRaios.map((k, v) => MapEntry(k, v.toJson())),
-      'Seccionadora': seccionadora.map((k, v) => MapEntry(k, v.toJson())),
-      'Disjuntor Religador': disjuntorReligador.map(
+      );
+    }
+    if (paraRaios.isNotEmpty) {
+      data['Para Raios'] = paraRaios.map((k, v) => MapEntry(k, v.toJson()));
+    }
+    if (seccionadora.isNotEmpty) {
+      data['Seccionadora'] = seccionadora.map(
         (k, v) => MapEntry(k, v.toJson()),
-      ),
-      'Transformador Corrente': transformadorCorrente.toJson(),
-    };
+      );
+    }
+    if (disjuntorReligador.isNotEmpty) {
+      data['Disjuntor Religador'] = disjuntorReligador.map(
+        (k, v) => MapEntry(k, v.toJson()),
+      );
+    }
+
+    return data;
   }
 
   InspectionProgress getProgress() {
@@ -230,9 +254,9 @@ class Megohmetro {
       }
     }
 
-    if (transformador.readings.isNotEmpty) {
+    if (transformador != null && transformador!.readings.isNotEmpty) {
       total++;
-      if (transformador.isFullyComplete) completed++;
+      if (transformador!.isFullyComplete) completed++;
     }
 
     countMap(terminacaoMufla);
@@ -240,10 +264,10 @@ class Megohmetro {
     countMap(seccionadora);
     countMap(disjuntorReligador);
 
-    if (transformadorCorrente.equipamento.isNotEmpty ||
-        transformadorCorrente.faseA.measurementUnit.isNotEmpty) {
+    // SAFELY CHECK THE NULLABLE TRANSFORMADOR DE CORRENTE
+    if (transformadorCorrente != null) {
       total++;
-      if (transformadorCorrente.isFullyComplete) completed++;
+      if (transformadorCorrente!.isFullyComplete) completed++;
     }
 
     return InspectionProgress(completed: completed, total: total);
@@ -251,18 +275,20 @@ class Megohmetro {
 }
 
 class Microohmimetro {
-  Map<String, DynamicGroup>
-  transformador; // Nested maps (At Delta Estrela -> H1-H3)
+  Map<String, DynamicGroup> transformador;
   Map<String, DynamicGroup> continuidadeMalha;
   Map<String, PhaseGroup> seccionadora;
   Map<String, PhaseGroup> disjuntorReligador;
 
   Microohmimetro({
-    required this.transformador,
-    required this.continuidadeMalha,
-    required this.seccionadora,
-    required this.disjuntorReligador,
-  });
+    Map<String, DynamicGroup>? transformador,
+    Map<String, DynamicGroup>? continuidadeMalha,
+    Map<String, PhaseGroup>? seccionadora,
+    Map<String, PhaseGroup>? disjuntorReligador,
+  }) : transformador = transformador ?? {},
+       continuidadeMalha = continuidadeMalha ?? {},
+       seccionadora = seccionadora ?? {},
+       disjuntorReligador = disjuntorReligador ?? {};
 
   factory Microohmimetro.fromJson(Map<String, dynamic> json) {
     return Microohmimetro(
@@ -274,16 +300,30 @@ class Microohmimetro {
   }
 
   Map<String, dynamic> toJson() {
-    return {
-      'Transformador': transformador.map((k, v) => MapEntry(k, v.toJson())),
-      'Continuidade Malha': continuidadeMalha.map(
+    final Map<String, dynamic> data = {};
+
+    if (transformador.isNotEmpty) {
+      data['Transformador'] = transformador.map(
         (k, v) => MapEntry(k, v.toJson()),
-      ),
-      'Seccionadora': seccionadora.map((k, v) => MapEntry(k, v.toJson())),
-      'Disjuntor Religador': disjuntorReligador.map(
+      );
+    }
+    if (continuidadeMalha.isNotEmpty) {
+      data['Continuidade Malha'] = continuidadeMalha.map(
         (k, v) => MapEntry(k, v.toJson()),
-      ),
-    };
+      );
+    }
+    if (seccionadora.isNotEmpty) {
+      data['Seccionadora'] = seccionadora.map(
+        (k, v) => MapEntry(k, v.toJson()),
+      );
+    }
+    if (disjuntorReligador.isNotEmpty) {
+      data['Disjuntor Religador'] = disjuntorReligador.map(
+        (k, v) => MapEntry(k, v.toJson()),
+      );
+    }
+
+    return data;
   }
 
   InspectionProgress getProgress() {
@@ -311,33 +351,45 @@ class Microohmimetro {
 
 class Ttr {
   Map<String, DynamicGroup> transformador;
-  PhaseGroup transformadorPotencial;
-  PhaseGroup transformadorCorrente;
+  PhaseGroup? transformadorPotencial;
+  PhaseGroup? transformadorCorrente;
 
   Ttr({
-    required this.transformador,
-    required this.transformadorPotencial,
-    required this.transformadorCorrente,
-  });
+    this.transformadorPotencial,
+    this.transformadorCorrente,
+    Map<String, DynamicGroup>? transformador,
+  }) : transformador = transformador ?? {};
 
   factory Ttr.fromJson(Map<String, dynamic> json) {
     return Ttr(
       transformador: _parseMapDynamic(json['Transformador']),
-      transformadorPotencial: PhaseGroup.fromJson(
-        json['Transformador de Potencial'] ?? {},
-      ),
-      transformadorCorrente: PhaseGroup.fromJson(
-        json['Transformador de Corrente'] ?? {},
-      ),
+      // SAFELY PARSE ONLY IF THEY EXIST IN JSON
+      transformadorPotencial: json['Transformador de Potencial'] != null
+          ? PhaseGroup.fromJson(json['Transformador de Potencial'])
+          : null,
+      transformadorCorrente: json['Transformador de Corrente'] != null
+          ? PhaseGroup.fromJson(json['Transformador de Corrente'])
+          : null,
     );
   }
 
   Map<String, dynamic> toJson() {
-    return {
-      'Transformador': transformador.map((k, v) => MapEntry(k, v.toJson())),
-      'Transformador de Potencial': transformadorPotencial.toJson(),
-      'Transformador de Corrente': transformadorCorrente.toJson(),
-    };
+    final Map<String, dynamic> data = {};
+
+    if (transformador.isNotEmpty) {
+      data['Transformador'] = transformador.map(
+        (k, v) => MapEntry(k, v.toJson()),
+      );
+    }
+    // ONLY ADD TO MAP IF NOT NULL
+    if (transformadorPotencial != null) {
+      data['Transformador de Potencial'] = transformadorPotencial!.toJson();
+    }
+    if (transformadorCorrente != null) {
+      data['Transformador de Corrente'] = transformadorCorrente!.toJson();
+    }
+
+    return data;
   }
 
   InspectionProgress getProgress() {
@@ -356,16 +408,15 @@ class Ttr {
 
     countMap(transformador);
 
-    if (transformadorCorrente.equipamento.isNotEmpty ||
-        transformadorCorrente.faseA.measurementUnit.isNotEmpty) {
+    // SAFELY CHECK NULLS
+    if (transformadorCorrente != null) {
       total++;
-      if (transformadorCorrente.isFullyComplete) completed++;
+      if (transformadorCorrente!.isFullyComplete) completed++;
     }
 
-    if (transformadorPotencial.equipamento.isNotEmpty ||
-        transformadorPotencial.faseA.measurementUnit.isNotEmpty) {
+    if (transformadorPotencial != null) {
       total++;
-      if (transformadorPotencial.isFullyComplete) completed++;
+      if (transformadorPotencial!.isFullyComplete) completed++;
     }
 
     return InspectionProgress(completed: completed, total: total);
@@ -375,7 +426,8 @@ class Ttr {
 class Hipot {
   Map<String, PhaseGroup> caboMediaTensao; // Poste Cubiculo, Cubiculo Trafo
 
-  Hipot({required this.caboMediaTensao});
+  Hipot({Map<String, PhaseGroup>? caboMediaTensao})
+    : caboMediaTensao = caboMediaTensao ?? {};
 
   factory Hipot.fromJson(Map<String, dynamic> json) {
     // Hipot is flat in your JSON, so we just map the whole object
@@ -383,7 +435,6 @@ class Hipot {
   }
 
   Map<String, dynamic> toJson() {
-    // Hipot caboMediaTensao map directly to the root of the Hipot JSON object
     return caboMediaTensao.map((k, v) => MapEntry(k, v.toJson()));
   }
 
@@ -408,16 +459,18 @@ class Hipot {
 }
 
 class Terrometro {
-  DynamicGroup subestacao;
+  DynamicGroup? subestacao;
   Map<String, DynamicGroup> transformadores; // Transformador 01...08
 
-  Terrometro({required this.subestacao, required this.transformadores});
+  Terrometro({this.subestacao, Map<String, DynamicGroup>? transformadores})
+    : transformadores = transformadores ?? {};
 
   factory Terrometro.fromJson(Map<String, dynamic> json) {
     return Terrometro(
-      subestacao: DynamicGroup.fromJson(
-        json['Subestação - Resitencia Aterramento'] ?? {},
-      ),
+      // SAFELY PARSE ONLY IF IT EXISTS
+      subestacao: json['Subestação - Resitencia Aterramento'] != null
+          ? DynamicGroup.fromJson(json['Subestação - Resitencia Aterramento'])
+          : null,
       transformadores: _parseMapDynamic(
         json['Transformador - Resistencia Aterramento'],
       ),
@@ -425,12 +478,18 @@ class Terrometro {
   }
 
   Map<String, dynamic> toJson() {
-    return {
-      'Subestação - Resitencia Aterramento': subestacao.toJson(),
-      'Transformador - Resistencia Aterramento': transformadores.map(
+    final Map<String, dynamic> data = {};
+
+    if (subestacao != null) {
+      data['Subestação - Resitencia Aterramento'] = subestacao!.toJson();
+    }
+    if (transformadores.isNotEmpty) {
+      data['Transformador - Resistencia Aterramento'] = transformadores.map(
         (k, v) => MapEntry(k, v.toJson()),
-      ),
-    };
+      );
+    }
+
+    return data;
   }
 
   InspectionProgress getProgress() {
@@ -447,10 +506,12 @@ class Terrometro {
       }
     }
 
-    if (subestacao.readings.isNotEmpty) {
+    // SAFELY CHECK THE NULLABLE SUBESTACAO
+    if (subestacao != null && subestacao!.readings.isNotEmpty) {
       total++;
-      if (subestacao.isFullyComplete) completed++;
+      if (subestacao!.isFullyComplete) completed++;
     }
+
     countMap(transformadores);
 
     return InspectionProgress(completed: completed, total: total);
@@ -463,10 +524,12 @@ class ToquePasso {
   Map<String, DynamicGroup> skid;
 
   ToquePasso({
-    required this.subestacao,
-    required this.cercamento,
-    required this.skid,
-  });
+    Map<String, DynamicGroup>? subestacao,
+    Map<String, DynamicGroup>? cercamento,
+    Map<String, DynamicGroup>? skid,
+  }) : subestacao = subestacao ?? {},
+       cercamento = cercamento ?? {},
+       skid = skid ?? {};
 
   factory ToquePasso.fromJson(Map<String, dynamic> json) {
     return ToquePasso(
@@ -477,15 +540,23 @@ class ToquePasso {
   }
 
   Map<String, dynamic> toJson() {
-    return {
-      'Toque-Passo - Subestacao': subestacao.map(
+    final Map<String, dynamic> data = {};
+
+    if (subestacao.isNotEmpty) {
+      data['Toque-Passo - Subestacao'] = subestacao.map(
         (k, v) => MapEntry(k, v.toJson()),
-      ),
-      'Toque-Passo - Cercamento/Abrigo': cercamento.map(
+      );
+    }
+    if (cercamento.isNotEmpty) {
+      data['Toque-Passo - Cercamento/Abrigo'] = cercamento.map(
         (k, v) => MapEntry(k, v.toJson()),
-      ),
-      'Toque-Passo - SKID': skid.map((k, v) => MapEntry(k, v.toJson())),
-    };
+      );
+    }
+    if (skid.isNotEmpty) {
+      data['Toque-Passo - SKID'] = skid.map((k, v) => MapEntry(k, v.toJson()));
+    }
+
+    return data;
   }
 
   InspectionProgress getProgress() {

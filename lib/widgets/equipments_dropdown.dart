@@ -18,6 +18,10 @@ class EquipmentDropdown extends StatelessWidget {
     final Map<String, List<String>> equipmentMap = {
       'Megohmetro': ['MI-3102BT', 'MD-5060x', 'Metrel 5kV'],
       'Microohmimetro': ['MPK-254', 'RMO600G', 'Ductor DLRRO'],
+      'TTR': ['TTR-1000', 'TTR-2000', 'TTR-3000'],
+      'Terrometro': ['Terrometro T-100', 'Terrometro T-200', 'Terrometro T-300'],
+      'Hipot': ['Hipot Tester H-100', 'Hipot Tester H-200', 'Hipot Tester H-300'],
+      'Toque-Passo': ['Toque-Passo TP-100', 'Toque-Passo TP-200', 'Toque-Passo TP-300'],
     };
 
     // Fallback if measurement type isn't found
@@ -45,3 +49,4 @@ class EquipmentDropdown extends StatelessWidget {
     );
   }
 }
+

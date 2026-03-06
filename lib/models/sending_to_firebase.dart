@@ -28,6 +28,7 @@ Future<void> uploadInitialDataToFirebase(BuildContext context) async {
   );
 
   try {
+    /// PARANOA ///
     var paranoaMegohmetro = Megohmetro(
       // Transformador
       transformador: DynamicGroup(
@@ -325,7 +326,6 @@ Future<void> uploadInitialDataToFirebase(BuildContext context) async {
       measurements: paranoaInspection,
     );
 
-    // --- NEW: Wrap the UFV inside a Plant object ---
     var usinaParanoa = Plant(
       id: 'Paranoá',
       name: 'Usina Paranoá',
@@ -333,19 +333,94 @@ Future<void> uploadInitialDataToFirebase(BuildContext context) async {
       ufvs: [ufvParanoa], // Add the UFV to the plant's list
     );
 
-    // 3. Save the PLANT to Firebase (which includes the UFVs inside it)
+    /// PANAMA ///
+    var panamaMegohmetro = Megohmetro(
+      transformador: DynamicGroup(
+        readings: {
+          "At Bt": MeasurementValue(),
+          "At Massa": MeasurementValue(),
+          "Bt Massa": MeasurementValue(),
+        },
+      ),
+    );
+
+    var panamaMicro = Microohmimetro(
+      transformador: {
+        "AT Delta-Estrela": DynamicGroup(
+          readings: {
+            "H1-H3": MeasurementValue(),
+            "H2-H1": MeasurementValue(),
+            "H3-H2": MeasurementValue(),
+          },
+        ),
+        "BT Delta-Estrela": DynamicGroup(
+          readings: {
+            "X1-X0": MeasurementValue(),
+            "X2-X0": MeasurementValue(),
+            "X3-X0": MeasurementValue(),
+          },
+        ),
+      },
+    );
+
+    var panamaTtr = Ttr(
+      transformador: {
+        "Delta-Estrela": DynamicGroup(
+          readings: {
+            "H1-H3 / X1-X0": MeasurementValue(),
+            "H2-H1 / X2-X0": MeasurementValue(),
+            "H3-H2 / X3-X0": MeasurementValue(),
+          },
+        ),
+      },
+    );
+
+    var panamaFullInspection = FullInspection(
+      megohmetro: panamaMegohmetro,
+      microohmimetro: panamaMicro,
+      ttr: panamaTtr,
+      hipot: Hipot(),
+      terrometro: Terrometro(),
+      toquePasso: ToquePasso(),
+    );
+
+    var ufvPanama = UFV(
+      id: 'UFV 1.1',
+      name: 'Panamá UFV 1.1',
+      fechamento: 'Delta',
+      marca: 'Siemens',
+      nSerie: 'SIEMENS-554433',
+      fatorK: 5,
+      tensaoPrimaria: 13800,
+      relacaoNominal: 115,
+      tensaoSecundaria: 1200,
+      potenciaKva: 2500,
+      impedancia: 25,
+      frequencia: 60,
+      peso: 500,
+      ip: 1,
+      dataFabricacao: '15/03/2021',
+      volumeOleo: 100,
+      measurements: panamaFullInspection,
+    );
+
+    var usinaPanama = Plant(
+      id: 'Panamá',
+      name: 'Usina Panamá',
+      local: 'Brasilia - DF',
+      ufvs: [ufvPanama],
+    );
+
     CollectionReference plantCollection = FirebaseFirestore.instance.collection(
       'plants',
     );
 
-    // We use usinaParanoa.toMap() instead of ufvParanoa.toMap()
-    await plantCollection.doc(usinaParanoa.id).set(usinaParanoa.toMap());
+    await plantCollection.doc(usinaPanama.id).set(usinaPanama.toMap());
 
-    // 4. Show success message
     if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('${usinaParanoa.name} salva com sucesso!'),
+          content: Text('${usinaPanama.name} salva com sucesso!'),
           backgroundColor: Colors.green,
         ),
       );

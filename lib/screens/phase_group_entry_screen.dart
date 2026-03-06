@@ -8,7 +8,7 @@ class PhaseGroupEntryScreen extends StatefulWidget {
   final String title;
   final PhaseGroup phaseGroup;
   final List<String> allowedUnits;
-
+  final String instrumentType; 
   final String plantId;
   final String ufvId;
 
@@ -17,6 +17,7 @@ class PhaseGroupEntryScreen extends StatefulWidget {
     required this.title,
     required this.phaseGroup,
     required this.allowedUnits,
+    required this.instrumentType, // Require it in the constructor
     required this.plantId, // Require them in the constructor
     required this.ufvId, // Require them in the constructor
   });
@@ -120,7 +121,7 @@ class _PhaseGroupEntryScreenState extends State<PhaseGroupEntryScreen> {
                       allowedUnits: widget.allowedUnits,
                     ),
                     EquipmentDropdown(
-                      measurementType: 'Megohmetro',
+                      measurementType: widget.instrumentType,
                       selectedValue: _selectedEquip,
                       onChanged: (val) {
                         setState(() {
