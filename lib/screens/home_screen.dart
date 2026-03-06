@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:sigma_app/models/sending_to_firebase.dart';
 import 'package:sigma_app/screens/select_plant.dart';
+import 'package:sigma_app/widgets/sync_button.dart';
 import '../widgets/menu_button.dart';
-import '../models/measurements.dart';
-import '../models/plant_model.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -48,9 +45,13 @@ class HomeScreen extends StatelessWidget {
           ),
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => uploadInitialDataToFirebase(context),
-        child: const Icon(Icons.cloud_upload),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+      floatingActionButton: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [const SendToFirebase(), const SyncButtonWidget()],
+        ),
       ),
     );
   }

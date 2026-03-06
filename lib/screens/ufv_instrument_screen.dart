@@ -226,7 +226,7 @@ class UfvInstrumentsScreen extends StatelessWidget {
                     );
 
                     if (didSave == true) {
-                      await LocalSyncService.saveUfvLocally(ufv);
+                      await LocalSyncService.savePlantLocally(plant);
                       if (context.mounted) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
@@ -357,7 +357,7 @@ class UfvInstrumentsScreen extends StatelessWidget {
                       ),
                     );
                     if (didSave == true) {
-                      await LocalSyncService.saveUfvLocally(ufv);
+                      await LocalSyncService.savePlantLocally(plant);
                       if (context.mounted) setFolderState(() {});
                     }
                   },
@@ -371,7 +371,6 @@ class UfvInstrumentsScreen extends StatelessWidget {
                 meg.transformadorCorrente!,
               );
             }
-
 
             return DynamicFolderScreen(title: 'Megôhmetro', options: folders);
           },
@@ -557,7 +556,7 @@ class UfvInstrumentsScreen extends StatelessWidget {
                       ),
                     );
                     if (didSave == true) {
-                      await LocalSyncService.saveUfvLocally(ufv);
+                      await LocalSyncService.savePlantLocally(plant);
                       if (context.mounted) setFolderState(() {});
                     }
                   },
@@ -666,7 +665,7 @@ class UfvInstrumentsScreen extends StatelessWidget {
                       ),
                     );
                     if (didSave == true) {
-                      await LocalSyncService.saveUfvLocally(ufv);
+                      await LocalSyncService.savePlantLocally(plant);
                       if (context.mounted) setFolderState(() {});
                     }
                   },
@@ -798,7 +797,7 @@ class UfvInstrumentsScreen extends StatelessWidget {
                   );
 
                   if (didSave == true) {
-                    await LocalSyncService.saveUfvLocally(ufv);
+                    await LocalSyncService.savePlantLocally(plant);
                     if (context.mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
@@ -853,7 +852,7 @@ class UfvInstrumentsScreen extends StatelessWidget {
                   );
 
                   if (didSave == true) {
-                    await LocalSyncService.saveUfvLocally(ufv);
+                    await LocalSyncService.savePlantLocally(plant);
                     if (context.mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
