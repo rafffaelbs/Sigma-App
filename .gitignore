@@ -1,0 +1,83 @@
+# ==========================================
+# STANDARD FLUTTER & DART
+# ==========================================
+# Miscellaneous
+*.class
+*.log
+*.pyc
+*.swp
+.DS_Store
+.atom/
+.build/
+.buildlog/
+.history
+.svn/
+.swiftpm/
+migrate_working_dir/
+
+# Flutter/Dart/Pub related
+**/doc/api/
+**/ios/Flutter/.last_build_id
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+.pub/
+/build/
+/coverage/
+
+# Symbolication & Obfuscation related
+app.*.symbols
+app.*.map.json
+
+# ==========================================
+# IDEs & EDITORS
+# ==========================================
+# IntelliJ / Android Studio
+*.iml
+*.ipr
+*.iws
+.idea/
+
+# VS Code (Uncomment the line below if you don't want to share VS Code settings)
+# .vscode/
+
+# ==========================================
+# SECRETS & ENVIRONMENT (CRITICAL)
+# ==========================================
+# Environment variables
+.env
+.env*
+*.env
+
+# Android App Signing (NEVER commit these)
+*.keystore
+*.jks
+key.properties
+android/key.properties
+
+# Firebase / Google Cloud / Crashlytics
+google-services.json
+GoogleService-Info.plist
+firebase-app-id.json
+crashlytics-build.properties
+
+# ==========================================
+# NATIVE BUILD ARTIFACTS
+# ==========================================
+# Android
+/android/app/debug
+/android/app/profile
+/android/app/release
+.gradle/
+/android/.gradle/
+/android/local.properties
+
+# iOS / macOS
+**/ios/Pods/
+**/ios/.symlinks/
+**/ios/Flutter/Flutter.framework
+**/ios/Flutter/Flutter.podspec
+**/macOS/Pods/
+*.xcworkspace/xcuserdata/

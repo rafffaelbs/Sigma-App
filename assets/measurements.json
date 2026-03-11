@@ -1,0 +1,354 @@
+{
+    "Megohmetro": {
+        "Transformador": {
+            "At Bt": {"value": 0.0, "measurmentUnit": "", "imageUrl": "", "timestamp": ""},
+            "At Massa": {"value": 0.0, "measurmentUnit": "", "imageUrl": "", "timestamp": ""},
+            "Bt Massa": {"value": 0.0, "measurmentUnit": "","imageUrl": "", "timestamp": ""},
+            "Equipamento": ""
+        },
+
+        "Terminacao Mufla": {
+            "Mufla Poste": {
+                "Fase A": {"value": 0.0, "measurmentUnit": "", "imageUrl": "", "timestamp": ""},
+                "Fase B": {"value": 0.0, "measurmentUnit": "", "imageUrl": "", "timestamp": ""},
+                "Fase C": {"value": 0.0, "measurmentUnit": "","imageUrl": "", "timestamp": ""},
+                "Fase Reserva": {"value": 0.0, "measurmentUnit": "","imageUrl": "", "timestamp": ""},
+                "Equipamento": ""
+            },
+            "Mufla Cubiculo Entrada": {
+                "Fase A": {"value": 0.0, "measurmentUnit": "", "imageUrl": "", "timestamp": ""},
+                "Fase B": {"value": 0.0, "measurmentUnit": "", "imageUrl": "", "timestamp": ""},
+                "Fase C": {"value": 0.0, "measurmentUnit": "","imageUrl": "", "timestamp": ""},
+                "Fase Reserva": {"value": 0.0, "measurmentUnit": "","imageUrl": "", "timestamp": ""},
+                "Equipamento": ""
+            },
+            "Mufla Cubiculo Saida": {
+                "Fase A": {"value": 0.0, "measurmentUnit": "", "imageUrl": "", "timestamp": ""},
+                "Fase B": {"value": 0.0, "measurmentUnit": "", "imageUrl": "", "timestamp": ""},
+                "Fase C": {"value": 0.0, "measurmentUnit": "","imageUrl": "", "timestamp": ""},
+                "Fase Reserva": {"value": 0.0, "measurmentUnit": "","imageUrl": "", "timestamp": ""},
+                "Equipamento": ""
+            },
+            "Mufla Trafo": {
+                "Fase A": {"value": 0.0, "measurmentUnit": "", "imageUrl": "", "timestamp": ""},
+                "Fase B": {"value": 0.0, "measurmentUnit": "", "imageUrl": "", "timestamp": ""},
+                "Fase C": {"value": 0.0, "measurmentUnit": "","imageUrl": "", "timestamp": ""},
+                "Fase Reserva": {"value": 0.0, "measurmentUnit": "","imageUrl": "", "timestamp": ""},
+                "Equipamento": ""
+            }
+        },
+
+        "Para Raios": {
+            "Para Raio Poste": {
+                "Fase A": {"value": 0.0, "measurmentUnit": "", "imageUrl": "", "timestamp": ""},
+                "Fase B": {"value": 0.0, "measurmentUnit": "", "imageUrl": "", "timestamp": ""},
+                "Fase C": {"value": 0.0, "measurmentUnit": "","imageUrl": "", "timestamp": ""},
+                "Equipamento": ""
+            },
+            "Para Raio Cubiculo Entrada": {
+                "Fase A": {"value": 0.0, "measurmentUnit": "", "imageUrl": "", "timestamp": ""},
+                "Fase B": {"value": 0.0, "measurmentUnit": "", "imageUrl": "", "timestamp": ""},
+                "Fase C": {"value": 0.0, "measurmentUnit": "","imageUrl": "", "timestamp": ""},
+                "Equipamento": ""
+            },
+            "Para Raio Cubiculo Saida": {
+                "Fase A": {"value": 0.0, "measurmentUnit": "", "imageUrl": "", "timestamp": ""},
+                "Fase B": {"value": 0.0, "measurmentUnit": "", "imageUrl": "", "timestamp": ""},
+                "Fase C": {"value": 0.0, "measurmentUnit": "","imageUrl": "", "timestamp": ""},
+                "Equipamento": ""
+            },
+            "Para Raio Trafo": {
+                "Fase A": {"value": 0.0, "measurmentUnit": "", "imageUrl": "", "timestamp": ""},
+                "Fase B": {"value": 0.0, "measurmentUnit": "", "imageUrl": "", "timestamp": ""},
+                "Fase C": {"value": 0.0, "measurmentUnit": "","imageUrl": "", "timestamp": ""},
+                "Equipamento": ""
+            }
+        },
+
+        "Seccionadora": {
+            "Seccionadora 01": {
+                "Fase A": {"value": 0.0, "measurmentUnit": "", "imageUrl": "", "timestamp": ""},
+                "Fase B": {"value": 0.0, "measurmentUnit": "", "imageUrl": "", "timestamp": ""},
+                "Fase C": {"value": 0.0, "measurmentUnit": "","imageUrl": "", "timestamp": ""},
+                "Equipamento": ""
+            },
+            "Seccionadora 02": {
+                "Fase A": {"value": 0.0, "measurmentUnit": "", "imageUrl": "", "timestamp": ""},
+                "Fase B": {"value": 0.0, "measurmentUnit": "", "imageUrl": "", "timestamp": ""},
+                "Fase C": {"value": 0.0, "measurmentUnit": "","imageUrl": "", "timestamp": ""},
+                "Equipamento": ""
+            }
+        },
+
+        "Disjuntor Religador": {
+            "Disjuntor Religador Aberto": {
+                "Fase A": {"value": 0.0, "measurmentUnit": "", "imageUrl": "", "timestamp": ""},
+                "Fase B": {"value": 0.0, "measurmentUnit": "", "imageUrl": "", "timestamp": ""},
+                "Fase C": {"value": 0.0, "measurmentUnit": "","imageUrl": "", "timestamp": ""},
+                "Equipamento": ""
+            },
+            "Disjuntor Religador Fechado": {
+                "Fase A": {"value": 0.0, "measurmentUnit": "", "imageUrl": "", "timestamp": ""},
+                "Fase B": {"value": 0.0, "measurmentUnit": "", "imageUrl": "", "timestamp": ""},
+                "Fase C": {"value": 0.0, "measurmentUnit": "","imageUrl": "", "timestamp": ""},
+                "Equipamento": ""
+            }
+        },
+
+        "Transformador Corrente": {
+                "Fase A": {"value": 0.0, "measurmentUnit": "", "imageUrl": "", "timestamp": ""},
+                "Fase B": {"value": 0.0, "measurmentUnit": "", "imageUrl": "", "timestamp": ""},
+                "Fase C": {"value": 0.0, "measurmentUnit": "","imageUrl": "", "timestamp": ""},
+                "Equipamento": ""
+        }
+    },
+
+
+    "Microohmimetro": {
+        "Transformador": {
+            "At Delta Estrela": {
+                "H1-H3": {"value": 0.0, "measurmentUnit": "", "imageUrl": "", "timestamp": ""},
+                "H2-H1": {"value": 0.0, "measurmentUnit": "", "imageUrl": "", "timestamp": ""},
+                "H3-H2": {"value": 0.0, "measurmentUnit": "", "imageUrl": "", "timestamp": ""},
+                "Equipamento": ""
+            },
+            "At Estrela Delta": {
+                "H1-H0": {"value": 0.0, "measurmentUnit": "", "imageUrl": "", "timestamp": ""},
+                "H2-H0": {"value": 0.0, "measurmentUnit": "", "imageUrl": "", "timestamp": ""},
+                "H3-H0": {"value": 0.0, "measurmentUnit": "", "imageUrl": "", "timestamp": ""},
+                "Equipamento": ""
+            },
+            "Bt Delta Estrela": {
+                "X1-X0": {"value": 0.0, "measurmentUnit": "", "imageUrl": "", "timestamp": ""},
+                "X2-X0": {"value": 0.0, "measurmentUnit": "", "imageUrl": "", "timestamp": ""},
+                "X3-X0": {"value": 0.0, "measurmentUnit": "", "imageUrl": "", "timestamp": ""},
+                "Equipamento": ""
+            },
+            "Bt Estrela Delta": {
+                "X1-X3": {"value": 0.0, "measurmentUnit": "", "imageUrl": "", "timestamp": ""},
+                "X2-X1": {"value": 0.0, "measurmentUnit": "", "imageUrl": "", "timestamp": ""},
+                "X3-X2": {"value": 0.0, "measurmentUnit": "", "imageUrl": "", "timestamp": ""},
+                "Equipamento": ""
+            }
+        },
+
+        "Continuidade Malha": {
+            "Continuidade Subestação": {
+                "Cubiculo/Malha": {"value": 0.0, "measurmentUnit": "", "imageUrl": "", "timestamp": ""},
+                "Poste/Malha": {"value": 0.0, "measurmentUnit": "", "imageUrl": "", "timestamp": ""},
+                "Cercamento/Malha": {"value": 0.0, "measurmentUnit": "", "imageUrl": "", "timestamp": ""},
+                "Equipamento": ""
+            },
+            "Continuidade SKID": {
+                "Tranformador/Malha": {"value": 0.0, "measurmentUnit": "", "imageUrl": "", "timestamp": ""},
+                "Bep/Malha": {"value": 0.0, "measurmentUnit": "", "imageUrl": "", "timestamp": ""},
+                "Inversor/Malha": {"value": 0.0, "measurmentUnit": "", "imageUrl": "", "timestamp": ""},
+                "Equipamento": ""
+            }
+        },
+
+        "Seccionadora": {
+            "Seccionadora 01": {
+                "Fase A": {"value": 0.0, "measurmentUnit": "", "imageUrl": "", "timestamp": ""},
+                "Fase B": {"value": 0.0, "measurmentUnit": "", "imageUrl": "", "timestamp": ""},
+                "Fase C": {"value": 0.0, "measurmentUnit": "","imageUrl": "", "timestamp": ""},
+                "Equipamento": ""
+            },
+            "Seccionadora 02": {
+                "Fase A": {"value": 0.0, "measurmentUnit": "", "imageUrl": "", "timestamp": ""},
+                "Fase B": {"value": 0.0, "measurmentUnit": "", "imageUrl": "", "timestamp": ""},
+                "Fase C": {"value": 0.0, "measurmentUnit": "","imageUrl": "", "timestamp": ""},
+                "Equipamento": ""
+            }
+        }, 
+
+        "Disjuntor Religador": {
+            "Disjuntor Religador Fechado": {
+                "Fase A": {"value": 0.0, "measurmentUnit": "", "imageUrl": "", "timestamp": ""},
+                "Fase B": {"value": 0.0, "measurmentUnit": "", "imageUrl": "", "timestamp": ""},
+                "Fase C": {"value": 0.0, "measurmentUnit": "","imageUrl": "", "timestamp": ""},
+                "Equipamento": ""
+            }
+        }    
+    },
+
+
+    "TTR": {
+        "Transformador": {
+            "Delta Estrela": {
+                "H1-H3 / X1-X0": {"value": 0.0, "measurmentUnit": "", "imageUrl": "", "timestamp": ""},
+                "H2-H1 / X2-X0": {"value": 0.0, "measurmentUnit": "", "imageUrl": "", "timestamp": ""},
+                "H3-H2 / X3-X0": {"value": 0.0, "measurmentUnit": "", "imageUrl": "", "timestamp": ""},
+                "Equipamento": ""
+            },
+            "Estrela Delta": {
+                "H1-H0 / X1-X3": {"value": 0.0, "measurmentUnit": "", "imageUrl": "", "timestamp": ""},
+                "H2-H0 / X2-X1": {"value": 0.0, "measurmentUnit": "", "imageUrl": "", "timestamp": ""},
+                "H3-H0 / X3-X2": {"value": 0.0, "measurmentUnit": "", "imageUrl": "", "timestamp": ""},
+                "Equipamento": ""
+            }
+        },
+
+        "Transformador de Potencial": {
+            "Fase A - H1-H2 / X1-X2": {"value": 0.0, "measurmentUnit": "", "imageUrl": "", "timestamp": ""},
+            "Fase B - H1-H2 / X1-X2": {"value": 0.0, "measurmentUnit": "", "imageUrl": "", "timestamp": ""},
+            "Fase C - H1-H2 / X1-X2": {"value": 0.0, "measurmentUnit": "","imageUrl": "", "timestamp": ""},
+            "Auxiliar - H1-H2 / X1-X2": {"value": 0.0, "measurmentUnit": "","imageUrl": "", "timestamp": ""},
+            "Equipamento": ""
+        },
+
+        "Transformador de Corrente": {
+            "Fase A - P1-P2 / X1-X2": {"value": 0.0, "measurmentUnit": "", "imageUrl": "", "timestamp": ""},
+            "Fase B - P1-P2 / X1-X2": {"value": 0.0, "measurmentUnit": "", "imageUrl": "", "timestamp": ""},
+            "Fase C - P1-P2 / X1-X2": {"value": 0.0, "measurmentUnit": "","imageUrl": "", "timestamp": ""},
+            "Auxiliar - P1-P2 / X1-X2": {"value": 0.0, "measurmentUnit": "","imageUrl": "", "timestamp": ""},
+            "Equipamento": ""
+        }
+
+
+    },
+
+    "Hipot": {
+        "Poste Cubiculo": {
+            "Fase A": {"value": 0.0, "measurmentUnit": "", "imageUrl": "", "timestamp": ""},
+            "Fase B": {"value": 0.0, "measurmentUnit": "", "imageUrl": "", "timestamp": ""},
+            "Fase C": {"value": 0.0, "measurmentUnit": "","imageUrl": "", "timestamp": ""},
+            "Fase Reserva": {"value": 0.0, "measurmentUnit": "","imageUrl": "", "timestamp": ""},
+            "Equipamento": ""
+        },
+        "Cubiculo Transformador": {
+            "Fase A": {"value": 0.0, "measurmentUnit": "", "imageUrl": "", "timestamp": ""},
+            "Fase B": {"value": 0.0, "measurmentUnit": "", "imageUrl": "", "timestamp": ""},
+            "Fase C": {"value": 0.0, "measurmentUnit": "","imageUrl": "", "timestamp": ""},
+            "Fase Reserva": {"value": 0.0, "measurmentUnit": "","imageUrl": "", "timestamp": ""},
+            "Equipamento": ""
+        }
+    },
+
+    "Terrometro": {
+        "Subestação - Resitencia Aterramento": {
+            "Cubiculo / Malha D=18/40": {"value": 0.0, "measurmentUnit": "", "imageUrl": "", "timestamp": ""},
+            "Cubiculo / Malha D=19/40": {"value": 0.0, "measurmentUnit": "", "imageUrl": "", "timestamp": ""},
+            "Cubiculo / Malha D=20/40": {"value": 0.0, "measurmentUnit": "","imageUrl": "", "timestamp": ""},
+            "Equipamento": ""
+        },
+        "Transformador - Resistencia Aterramento": {
+            "Transformador 01": {
+                "Transformador 01 / Malha D=18/40": {"value": 0.0, "measurmentUnit": "", "imageUrl": "", "timestamp": ""},
+                "Transformador 01 / Malha D=19/40": {"value": 0.0, "measurmentUnit": "", "imageUrl": "", "timestamp": ""},
+                "Transformador 01 / Malha D=20/40": {"value": 0.0, "measurmentUnit": "","imageUrl": "", "timestamp": ""},
+                "Equipamento": ""
+            },
+            "Transformador 02": {
+                "Transformador 02 / Malha D=18/40": {"value": 0.0, "measurmentUnit": "", "imageUrl": "", "timestamp": ""},
+                "Transformador 02 / Malha D=19/40": {"value": 0.0, "measurmentUnit": "", "imageUrl": "", "timestamp": ""},
+                "Transformador 02 / Malha D=20/40": {"value": 0.0, "measurmentUnit": "","imageUrl": "", "timestamp": ""},
+                "Equipamento": ""
+            },
+            "Transformador 03": {
+                "Transformador 03 / Malha D=18/40": {"value": 0.0, "measurmentUnit": "", "imageUrl": "", "timestamp": ""},
+                "Transformador 03 / Malha D=19/40": {"value": 0.0, "measurmentUnit": "", "imageUrl": "", "timestamp": ""},
+                "Transformador 03 / Malha D=20/40": {"value": 0.0, "measurmentUnit": "","imageUrl": "", "timestamp": ""},
+                "Equipamento": ""
+            },
+            "Transformador 04": {
+                "Transformador 04 / Malha D=18/40": {"value": 0.0, "measurmentUnit": "", "imageUrl": "", "timestamp": ""},
+                "Transformador 04 / Malha D=19/40": {"value": 0.0, "measurmentUnit": "", "imageUrl": "", "timestamp": ""},
+                "Transformador 04 / Malha D=20/40": {"value": 0.0, "measurmentUnit": "","imageUrl": "", "timestamp": ""},
+                "Equipamento": ""
+            },
+            "Transformador 05": {
+                "Transformador 05 / Malha D=18/40": {"value": 0.0, "measurmentUnit": "", "imageUrl": "", "timestamp": ""},
+                "Transformador 05 / Malha D=19/40": {"value": 0.0, "measurmentUnit": "", "imageUrl": "", "timestamp": ""},
+                "Transformador 05 / Malha D=20/40": {"value": 0.0, "measurmentUnit": "","imageUrl": "", "timestamp": ""},
+                "Equipamento": ""
+            },
+            "Transformador 06": {
+                "Transformador 06 / Malha D=18/40": {"value": 0.0, "measurmentUnit": "", "imageUrl": "", "timestamp": ""},
+                "Transformador 06 / Malha D=19/40": {"value": 0.0, "measurmentUnit": "", "imageUrl": "", "timestamp": ""},
+                "Transformador 06 / Malha D=20/40": {"value": 0.0, "measurmentUnit": "","imageUrl": "", "timestamp": ""},
+                "Equipamento": ""
+            },
+            "Transformador 07": {
+                "Transformador 07 / Malha D=18/40": {"value": 0.0, "measurmentUnit": "", "imageUrl": "", "timestamp": ""},
+                "Transformador 07 / Malha D=19/40": {"value": 0.0, "measurmentUnit": "", "imageUrl": "", "timestamp": ""},
+                "Transformador 07 / Malha D=20/40": {"value": 0.0, "measurmentUnit": "","imageUrl": "", "timestamp": ""},
+                "Equipamento": ""
+            },
+            "Transformador 08": {
+                "Transformador 08 / Malha D=18/40": {"value": 0.0, "measurmentUnit": "", "imageUrl": "", "timestamp": ""},
+                "Transformador 08 / Malha D=19/40": {"value": 0.0, "measurmentUnit": "", "imageUrl": "", "timestamp": ""},
+                "Transformador 08 / Malha D=20/40": {"value": 0.0, "measurmentUnit": "","imageUrl": "", "timestamp": ""},
+                "Equipamento": ""
+            }
+
+        }
+    },
+
+    "Toque-Passo - Subestacao": {
+        "Cubiculo Protecao Geral": {
+            "Cubiculo Protecao Geral - Toque": {"value": 0.0, "measurmentUnit": "", "imageUrl": "", "timestamp": ""},
+            "Cubiculo Protecao Geral - Passo 1m": {"value": 0.0, "measurmentUnit": "", "imageUrl": "", "timestamp": ""},
+            "Cubiculo Protecao Geral - Passo 5m": {"value": 0.0, "measurmentUnit": "","imageUrl": "", "timestamp": ""},
+            "Equipamento": ""
+        },
+        "Cubiculo Protecao/Medicao": {
+            "Cubiculo Protecao/Medicao 01 - Toque": {"value": 0.0, "measurmentUnit": "", "imageUrl": "", "timestamp": ""},
+            "Cubiculo Protecao/Medicao 02 - Toque": {"value": 0.0, "measurmentUnit": "", "imageUrl": "", "timestamp": ""},
+            "Cubiculo Protecao/Medicao 03 - Toque": {"value": 0.0, "measurmentUnit": "","imageUrl": "", "timestamp": ""},
+            "Cubiculo Protecao/Medicao 04 - Toque": {"value": 0.0, "measurmentUnit": "", "imageUrl": "", "timestamp": ""},
+            "Cubiculo Protecao/Medicao 05 - Toque": {"value": 0.0, "measurmentUnit": "", "imageUrl": "", "timestamp": ""},
+            "Cubiculo Protecao/Medicao 06 - Toque": {"value": 0.0, "measurmentUnit": "","imageUrl": "", "timestamp": ""},
+            "Cubiculo Protecao/Medicao 07 - Toque": {"value": 0.0, "measurmentUnit": "", "imageUrl": "", "timestamp": ""},
+            "Cubiculo Protecao/Medicao 08 - Toque": {"value": 0.0, "measurmentUnit": "","imageUrl": "", "timestamp": ""},
+            "Equipamento": ""
+        }
+    },
+
+    "Toque-Passo - Cercamento/Abrigo": {
+        "Portao/Porta Acesso": {
+            "Portao/Porta Acesso - Toque": {"value": 0.0, "measurmentUnit": "", "imageUrl": "", "timestamp": ""},
+            "Portao/Porta Acesso - Passo 1m": {"value": 0.0, "measurmentUnit": "", "imageUrl": "", "timestamp": ""},
+            "Portao/Porta Acesso - Passo 5m": {"value": 0.0, "measurmentUnit": "","imageUrl": "", "timestamp": ""},
+            "Equipamento": ""
+        },
+        "Componentes": {
+            "Alambrado - Toque": {"value": 0.0, "measurmentUnit": "", "imageUrl": "", "timestamp": ""},
+            "Gradil Intero - Toque": {"value": 0.0, "measurmentUnit": "", "imageUrl": "", "timestamp": ""},
+            "Componentes Metalcios - Toque": {"value": 0.0, "measurmentUnit": "","imageUrl": "", "timestamp": ""},
+            "Equipamento": ""
+        }
+    },
+
+    "Toque-Passo - SKID": {
+        "Tranformador/QGBT": {
+            "Tranformador/QGBT - Toque": {"value": 0.0, "measurmentUnit": "", "imageUrl": "", "timestamp": ""},
+            "Tranformador/QGBT - Passo 1m": {"value": 0.0, "measurmentUnit": "", "imageUrl": "", "timestamp": ""},
+            "Tranformador/QGBT - Passo 5m": {"value": 0.0, "measurmentUnit": "","imageUrl": "", "timestamp": ""},
+            "Equipamento": ""
+        },
+    
+        "Inversores": {
+            "Inversores - Toque": {"value": 0.0, "measurmentUnit": "", "imageUrl": "", "timestamp": ""},
+            "Inversores - Passo 1m": {"value": 0.0, "measurmentUnit": "", "imageUrl": "", "timestamp": ""},
+            "Inversores - Passo 5m": {"value": 0.0, "measurmentUnit": "","imageUrl": "", "timestamp": ""},
+            "Equipamento": ""
+        },
+
+        "Componentes Metalicos": {
+            "QGBT - Toque": {"value": 0.0, "measurmentUnit": "", "imageUrl": "", "timestamp": ""},
+            "Quadro BT - Toque": {"value": 0.0, "measurmentUnit": "", "imageUrl": "", "timestamp": ""},
+            "Container Metalico - Toque": {"value": 0.0, "measurmentUnit": "","imageUrl": "", "timestamp": ""},
+            "Cercamento UFV - Toque": {"value": 0.0, "measurmentUnit": "","imageUrl": "", "timestamp": ""},
+            "Estrutura Fixacao FV - Toque": {"value": 0.0, "measurmentUnit": "","imageUrl": "", "timestamp": ""},
+            "Equipamento": ""
+        },
+
+        "Modulos": {
+            "Modulos - Toque": {"value": 0.0, "measurmentUnit": "", "imageUrl": "", "timestamp": ""},
+            "Modulos - Passo 1m": {"value": 0.0, "measurmentUnit": "", "imageUrl": "", "timestamp": ""},
+            "Modulos - Passo 5m": {"value": 0.0, "measurmentUnit": "","imageUrl": "", "timestamp": ""},
+            "Equipamento": ""
+        }
+    }
+}
