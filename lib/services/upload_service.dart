@@ -368,6 +368,7 @@ class FirebaseService {
         hipot: paranoaHipot,
         terrometro: paranoaTerrometro,
         toquePasso: paranoaToquePasso,
+        identificacaoUrl: '', 
       );
 
       var ufvParanoa = UFV(
@@ -446,6 +447,7 @@ class FirebaseService {
         hipot: Hipot(),
         terrometro: Terrometro(),
         toquePasso: ToquePasso(),
+        identificacaoUrl: '',
       );
 
       var ufvPanama = UFV(

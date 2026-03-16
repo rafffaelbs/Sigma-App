@@ -5,48 +5,17 @@ import 'package:flutter/material.dart';
 import 'package:gal/gal.dart';
 import 'package:sigma_app/models/measurements.dart';
 import 'package:sigma_app/services/custom_camera_screen.dart'; // The image processing library
-//import 'package:image/image.dart' as img;
-//import 'package:image_picker/image_picker.dart';
-// import 'package:geolocator/geolocator.dart'; 
+import 'package:sigma_app/services/evaluation_service.dart'; // --- NEW: Import the evaluation service ---
+import 'package:sigma_app/models/plant_model.dart'; // --- NEW: Needed for UFV ---
 
-/*
-Future<File> _applyWatermark(
-  File imageFile,
-  String timestamp,
-  double lat,
-  double lon,
-) async {
-  // 1. Read the image file
-  final bytes = await imageFile.readAsBytes();
-  img.Image? originalImage = img.decodeImage(bytes);
-
-  if (originalImage == null) return imageFile;
-
-  // 2. Prepare the text
-  String watermarkText =
-      'Data: ${timestamp.substring(0, 16).replaceAll('T', ' ')}\nLat: $lat\nLon: $lon';
-
-  // 3. Draw the text on the image
-  // We use a built-in font. For high-res photos, you might need a larger font.
-  img.drawString(
-    font: img.arial24,
-    originalImage,
-    x: 20, // Margin from left
-    y: originalImage.height - 120, // Margin from bottom
-    watermarkText,
-    color: img.ColorRgb8(255, 255, 255), // White text
-  );
-
-  // 4. Save the watermarked image back to the file
-  final watermarkedBytes = img.encodeJpg(originalImage);
-  return await imageFile.writeAsBytes(watermarkedBytes);
-}
-*/
 class MeasurementInputBlock extends StatefulWidget {
   final String label;
   final MeasurementValue measurementValue;
   final TextEditingController controller;
-  final List<String> allowedUnits; // NEW: Dynamic Units!
+  final List<String> allowedUnits;
+  final String
+  instrumentType; // --- NEW: Pass the instrument name (e.g., 'Megohmetro') ---
+  final UFV ufv; // --- NEW: Pass the UFV for future formula calculations ---
 
   const MeasurementInputBlock({
     super.key,
@@ -54,6 +23,8 @@ class MeasurementInputBlock extends StatefulWidget {
     required this.measurementValue,
     required this.controller,
     required this.allowedUnits,
+    required this.instrumentType,
+    required this.ufv,
   });
 
   @override
@@ -61,10 +32,7 @@ class MeasurementInputBlock extends StatefulWidget {
 }
 
 class _MeasurementInputBlockState extends State<MeasurementInputBlock> {
-  //final ImagePicker _picker = ImagePicker();
-
   Future<void> _takePhoto(bool isEnvironment) async {
-    // Push the custom camera screen
     final File? result = await Navigator.push<File>(
       context,
       MaterialPageRoute(
@@ -74,7 +42,6 @@ class _MeasurementInputBlockState extends State<MeasurementInputBlock> {
     );
 
     if (result != null) {
-      // The result is already cropped and watermarked!
       setState(() {
         if (isEnvironment) {
           widget.measurementValue.environmentImageUrl = result.path;
@@ -82,8 +49,6 @@ class _MeasurementInputBlockState extends State<MeasurementInputBlock> {
           widget.measurementValue.imageUrl = result.path;
         }
       });
-
-      // Save to gallery if needed
       await Gal.putImage(result.path);
     }
   }
@@ -98,9 +63,20 @@ class _MeasurementInputBlockState extends State<MeasurementInputBlock> {
     });
   }
 
+  // --- NEW: Helper method to run the evaluation ---
+  void _runEvaluation() {
+    setState(() {
+      widget.measurementValue.evaluation = EvaluationService.evaluate(
+        widget.instrumentType,
+        widget.controller.text,
+        widget.measurementValue.measurementUnit,
+        widget.ufv,
+      );
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    // Ensure the current unit is valid for this specific instrument
     String currentUnit =
         widget.allowedUnits.contains(widget.measurementValue.measurementUnit)
         ? widget.measurementValue.measurementUnit
@@ -118,7 +94,6 @@ class _MeasurementInputBlockState extends State<MeasurementInputBlock> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Title (e.g., "TRAFO: AT - BT")
             Center(
               child: Text(
                 widget.label.toUpperCase(),
@@ -130,7 +105,6 @@ class _MeasurementInputBlockState extends State<MeasurementInputBlock> {
             ),
             const Divider(height: 24, thickness: 1),
 
-            // 1. Image Block (Medição)
             _buildImageSection(
               title: 'Adicionar Imagem Medição',
               imagePath: widget.measurementValue.imageUrl,
@@ -138,7 +112,6 @@ class _MeasurementInputBlockState extends State<MeasurementInputBlock> {
             ),
             const SizedBox(height: 16),
 
-            // 2. Image Block (Ambiente)
             _buildImageSection(
               title: 'Adicionar Imagem Ambiente',
               imagePath: widget.measurementValue.environmentImageUrl,
@@ -161,6 +134,12 @@ class _MeasurementInputBlockState extends State<MeasurementInputBlock> {
                       keyboardType: const TextInputType.numberWithOptions(
                         decimal: true,
                       ),
+                      // --- NEW: Trigger evaluation when typing ---
+                      onChanged: (value) {
+                        widget.measurementValue.value =
+                            double.tryParse(value.replaceAll(',', '.')) ?? 0.0;
+                        _runEvaluation();
+                      },
                       decoration: const InputDecoration(
                         hintText: 'Insira o Valor...',
                         border: InputBorder.none,
@@ -195,10 +174,9 @@ class _MeasurementInputBlockState extends State<MeasurementInputBlock> {
                         }).toList(),
                         onChanged: (String? newValue) {
                           if (newValue != null) {
-                            setState(
-                              () => widget.measurementValue.measurementUnit =
-                                  newValue,
-                            );
+                            widget.measurementValue.measurementUnit = newValue;
+                            // --- NEW: Trigger evaluation when unit changes ---
+                            _runEvaluation();
                           }
                         },
                       ),
@@ -207,18 +185,83 @@ class _MeasurementInputBlockState extends State<MeasurementInputBlock> {
                 ],
               ),
             ),
+
+            // --- NEW: Display the evaluation badge right below the input ---
+            if (widget.measurementValue.evaluation != 'none')
+              Padding(
+                padding: const EdgeInsets.only(top: 12.0),
+                child: _buildEvaluationBadge(
+                  widget.measurementValue.evaluation,
+                ),
+              ),
           ],
         ),
       ),
     );
   }
 
-  // Handles showing EITHER the "Add Photo" button OR the Image Preview + Timestamp
+  // --- NEW: Visual Badge builder ---
+  Widget _buildEvaluationBadge(String status) {
+    Color bgColor;
+    Color textColor;
+    String text;
+    IconData icon;
+
+    switch (status) {
+      case 'aprovado':
+        bgColor = Colors.green.shade50;
+        textColor = Colors.green.shade700;
+        text = 'APROVADO';
+        icon = Icons.check_circle;
+        break;
+      case 'alerta':
+        bgColor = Colors.orange.shade50;
+        textColor = Colors.orange.shade800;
+        text = 'ALERTA';
+        icon = Icons.warning_rounded;
+        break;
+      case 'reprovado':
+        bgColor = Colors.red.shade50;
+        textColor = Colors.red.shade700;
+        text = 'REPROVADO';
+        icon = Icons.cancel;
+        break;
+      default:
+        return const SizedBox.shrink();
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: bgColor,
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: textColor.withOpacity(0.3)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 14, color: textColor),
+          const SizedBox(width: 6),
+          Text(
+            text,
+            style: TextStyle(
+              color: textColor,
+              fontWeight: FontWeight.bold,
+              fontSize: 11,
+              letterSpacing: 0.5,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildImageSection({
     required String title,
     required String imagePath,
     required bool isEnvironment,
   }) {
+    // ... (Keep your existing _buildImageSection exactly as it is) ...
     if (imagePath.isEmpty) {
       return SizedBox(
         width: double.infinity,
@@ -239,15 +282,13 @@ class _MeasurementInputBlockState extends State<MeasurementInputBlock> {
       );
     }
 
-    // IMAGE PREVIEW WITH DELETE AND GPS OVERLAY
     return Stack(
       children: [
-        // The Photo
         ClipRRect(
           borderRadius: BorderRadius.circular(8),
           child: imagePath.startsWith('http')
               ? Image.network(
-                  imagePath, // Uses the Firebase URL
+                  imagePath,
                   width: double.infinity,
                   height: 250,
                   fit: BoxFit.cover,
@@ -264,13 +305,12 @@ class _MeasurementInputBlockState extends State<MeasurementInputBlock> {
                   ),
                 )
               : Image.file(
-                  File(imagePath), // Uses the local phone file
+                  File(imagePath),
                   width: double.infinity,
                   height: 250,
                   fit: BoxFit.cover,
                 ),
         ),
-        // Delete Button (Top Right)
         Positioned(
           top: 8,
           right: 8,
@@ -282,67 +322,7 @@ class _MeasurementInputBlockState extends State<MeasurementInputBlock> {
             ),
           ),
         ),
-
-        // GPS & Timestamp Overlay (Bottom Left)
-        if (!isEnvironment && widget.measurementValue.latitude != null)
-          Positioned(
-            bottom: 8,
-            left: 8,
-            child: Container(
-              padding: const EdgeInsets.all(6),
-              color: Colors.black.withOpacity(0.6),
-              child: Text(
-                'Data: ${widget.measurementValue.timestamp.substring(0, 16).replaceAll('T', ' ')}\n'
-                'Lat: ${widget.measurementValue.latitude}\n'
-                'Lon: ${widget.measurementValue.longitude}',
-                style: const TextStyle(color: Colors.white, fontSize: 10),
-              ),
-            ),
-          ),
       ],
     );
   }
-
-/*  Future<bool> _handleLocationPermission() async {
-    bool serviceEnabled;
-    LocationPermission permission;
-
-    // Check if location services are enabled
-    serviceEnabled = await Geolocator.isLocationServiceEnabled();
-    if (!serviceEnabled) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            'Os serviços de localização estão desativados. Por favor, ative-os.',
-          ),
-        ),
-      );
-      return false;
-    }
-
-    permission = await Geolocator.checkPermission();
-    if (permission == LocationPermission.denied) {
-      permission = await Geolocator.requestPermission();
-      if (permission == LocationPermission.denied) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Permissão de localização negada.')),
-        );
-        return false;
-      }
-    }
-
-    if (permission == LocationPermission.deniedForever) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            'As permissões de localização estão permanentemente negadas.',
-          ),
-        ),
-      );
-      return false;
-    }
-
-    return true;
-  }
-*/
 }

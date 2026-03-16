@@ -26,6 +26,7 @@ migrate_working_dir/
 .pub/
 /build/
 /coverage/
+TODO.md
 
 # Symbolication & Obfuscation related
 app.*.symbols

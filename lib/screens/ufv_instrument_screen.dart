@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart'; // <-- NEW: Required for the camera
 import 'package:sigma_app/models/plant_model.dart';
 import 'package:sigma_app/models/measurements.dart';
 import 'package:sigma_app/screens/dynamic_folder_screen.dart';
+import 'package:sigma_app/screens/identificacao_entry_screen.dart';
 import 'package:sigma_app/screens/phase_group_entry_screen.dart';
 import 'package:sigma_app/screens/dynamic_group_entry_screen.dart';
 import 'package:sigma_app/services/local_sync_service.dart';
@@ -27,18 +29,83 @@ class UfvInstrumentsScreen extends StatelessWidget {
     final ter = inspection.terrometro.getProgress();
     final toq = inspection.toquePasso.getProgress();
 
+    // --- UPDATED: Add +1 to total items for the Identificação photo ---
     int totalItems =
-        meg.total + mic.total + ttr.total + hip.total + ter.total + toq.total;
+        meg.total +
+        mic.total +
+        ttr.total +
+        hip.total +
+        ter.total +
+        toq.total +
+        1;
+
+    // --- UPDATED: Check if identificacaoUrl is not empty ---
+    int identCompleted = inspection.identificacaoUrl.isNotEmpty ? 1 : 0;
+
     int completedItems =
         meg.completed +
         mic.completed +
         ttr.completed +
         hip.completed +
         ter.completed +
-        toq.completed;
+        toq.completed +
+        identCompleted;
 
     // Must have at least 1 item, and all items must be complete
     return totalItems > 0 && totalItems == completedItems;
+  }
+
+  // --- NEW: Function to handle picking the Identificação image ---
+  Future<void> _pickIdentificacaoImage(
+    BuildContext context,
+    FullInspection inspection,
+  ) async {
+    final picker = ImagePicker();
+
+    // Let the user choose between Camera or Gallery
+    final source = await showDialog<ImageSource>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Selecionar Foto'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.camera_alt),
+              title: const Text('Câmera'),
+              onTap: () => Navigator.pop(context, ImageSource.camera),
+            ),
+            ListTile(
+              leading: const Icon(Icons.photo_library),
+              title: const Text('Galeria'),
+              onTap: () => Navigator.pop(context, ImageSource.gallery),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    if (source != null) {
+      final XFile? photo = await picker.pickImage(source: source);
+      if (photo != null) {
+        // Save the path to the model
+        inspection.identificacaoUrl = photo.path;
+
+        // Save it to your local database
+        await LocalSyncService.savePlantLocally(plant);
+
+        if (context.mounted) {
+          // Refresh the UI to update the progress counter
+          (context as Element).markNeedsBuild();
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Foto de identificação salva com sucesso!'),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
+      }
+    }
   }
 
   @override
@@ -77,6 +144,33 @@ class UfvInstrumentsScreen extends StatelessWidget {
     List<Widget> buildInstrumentButtons() {
       List<Widget> buttons = [];
 
+      // --- NEW: Add the Identificação button at the very top ---
+      buttons.add(
+        Padding(
+          padding: const EdgeInsets.only(bottom: 16),
+          child: InspectionButton(
+            title: 'Identificação',
+            completedCount: inspection.identificacaoUrl.isNotEmpty ? 1 : 0,
+            totalCount: 1,
+            onTap: () async {
+              final didSave = await Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) =>
+                      IdentificacaoEntryScreen(plant: plant, ufv: ufv),
+                ),
+              );
+
+              // If the user saved, refresh this screen to update the progress!
+              if (didSave == true) {
+                if (context.mounted) {
+                  (context as Element).markNeedsBuild();
+                }
+              }
+            },
+          ),
+        ),
+      );
       void addButton(
         String title,
         InspectionProgress prog,
@@ -221,6 +315,7 @@ class UfvInstrumentsScreen extends StatelessWidget {
                           instrumentType: 'Megohmetro',
                           plantId: plant.id,
                           ufvId: ufv.id,
+                          ufv: ufv,
                         ),
                       ),
                     );
@@ -353,6 +448,7 @@ class UfvInstrumentsScreen extends StatelessWidget {
                           plantId: plant.id,
                           ufvId: ufv.id,
                           instrumentType: 'Megohmetro',
+                          ufv: ufv,
                         ),
                       ),
                     );
@@ -552,6 +648,7 @@ class UfvInstrumentsScreen extends StatelessWidget {
                           instrumentType: 'TTR',
                           plantId: plant.id,
                           ufvId: ufv.id,
+                          ufv: ufv,
                         ),
                       ),
                     );
@@ -661,6 +758,7 @@ class UfvInstrumentsScreen extends StatelessWidget {
                           instrumentType: 'Terrometro',
                           plantId: plant.id,
                           ufvId: ufv.id,
+                          ufv: ufv,
                         ),
                       ),
                     );
@@ -792,6 +890,7 @@ class UfvInstrumentsScreen extends StatelessWidget {
                         instrumentType: instrumentType,
                         plantId: plant.id,
                         ufvId: ufv.id,
+                        ufv: ufv,
                       ),
                     ),
                   );
@@ -847,6 +946,7 @@ class UfvInstrumentsScreen extends StatelessWidget {
                         instrumentType: instrumentType,
                         plantId: plant.id,
                         ufvId: ufv.id,
+                        ufv: ufv
                       ),
                     ),
                   );

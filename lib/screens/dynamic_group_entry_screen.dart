@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:sigma_app/models/measurements.dart';
+import 'package:sigma_app/models/plant_model.dart';
 import 'package:sigma_app/widgets/custom_header.dart';
 import 'package:sigma_app/widgets/equipments_dropdown.dart';
 import 'package:sigma_app/widgets/measurement_input_block.dart';
@@ -11,6 +12,7 @@ class DynamicGroupEntryScreen extends StatefulWidget {
   final String instrumentType;
   final String plantId;
   final String ufvId;
+  final UFV ufv;
 
   const DynamicGroupEntryScreen({
     super.key,
@@ -20,6 +22,7 @@ class DynamicGroupEntryScreen extends StatefulWidget {
     required this.instrumentType,
     required this.plantId,
     required this.ufvId,
+    required this.ufv,
   });
 
   @override
@@ -31,7 +34,6 @@ class _DynamicGroupEntryScreenState extends State<DynamicGroupEntryScreen> {
   final Map<String, TextEditingController> _controllers = {};
   final bool _isUploading = false;
 
-  // Track the selected equipment in the local state
   String? _selectedEquipment;
 
   @override
@@ -39,10 +41,10 @@ class _DynamicGroupEntryScreenState extends State<DynamicGroupEntryScreen> {
     super.initState();
     widget.dynamicGroup.readings.forEach((key, measurement) {
       _controllers[key] = TextEditingController(
+        // --- FIXED: Reverted back to checking if the double is > 0 ---
         text: measurement.value > 0 ? measurement.value.toString() : '',
       );
     });
-    // Initialize if model already has a value
     _selectedEquipment = widget.dynamicGroup.equipment;
   }
 
@@ -55,7 +57,6 @@ class _DynamicGroupEntryScreenState extends State<DynamicGroupEntryScreen> {
   }
 
   void _saveData() {
-    // Removed 'async' and 'Future'
     if (_selectedEquipment == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Por favor, selecione o equipamento.')),
@@ -63,17 +64,20 @@ class _DynamicGroupEntryScreenState extends State<DynamicGroupEntryScreen> {
       return;
     }
 
-    // 1. Assign all the typed values and equipment to the local model
     _controllers.forEach((key, controller) {
+      // --- FIXED: Safely convert the String back to a double ---
+      // replaceAll makes sure that if they type "1,5" it converts to "1.5" so Dart can read it
       widget.dynamicGroup.readings[key]?.value =
-          double.tryParse(controller.text) ?? 0.0;
+          double.tryParse(controller.text.replaceAll(',', '.')) ?? 0.0;
+          
       widget.dynamicGroup.readings[key]?.equipment = _selectedEquipment!;
     });
-    widget.dynamicGroup.equipment =
-        _selectedEquipment!; // Save selected equipment to the model
-    // 2. VALIDATION: Check if any entered value is missing photos
+    
+    widget.dynamicGroup.equipment = _selectedEquipment!; 
+
     bool hasMissingPhotos = widget.dynamicGroup.readings.values.any((reading) {
-      return reading.value > 0.0 && reading.imageUrl.isEmpty;
+      // --- FIXED: Reverted back to checking if the double is > 0 ---
+      return reading.value > 0 && reading.imageUrl.isEmpty;
     });
 
     if (hasMissingPhotos) {
@@ -82,10 +86,9 @@ class _DynamicGroupEntryScreenState extends State<DynamicGroupEntryScreen> {
           content: Text('Adicione fotos para todas as medições preenchidas.'),
         ),
       );
-      return; // Stop the save process
+      return; 
     }
 
-    // 3. Return to the previous screen and pass 'true'
     if (mounted) Navigator.pop(context, true);
   }
 
@@ -105,16 +108,18 @@ class _DynamicGroupEntryScreenState extends State<DynamicGroupEntryScreen> {
                   ..._controllers.entries.toList().reversed.map(
                     (entry) => MeasurementInputBlock(
                       label: entry.key,
-                      measurementValue:
-                          widget.dynamicGroup.readings[entry.key]!,
+                      measurementValue: widget.dynamicGroup.readings[entry.key]!,
                       controller: entry.value,
                       allowedUnits: widget.allowedUnits,
+                      instrumentType: widget.instrumentType, 
+                      ufv: widget.ufv, 
                     ),
                   ),
                   EquipmentDropdown(
                     measurementType: widget.instrumentType,
                     selectedValue: _selectedEquipment,
-                    onChanged: (val) {
+                    // --- FIXED: Explicitly declared the type as String? ---
+                    onChanged: (String? val) {
                       setState(() {
                         _selectedEquipment = val;
                       });

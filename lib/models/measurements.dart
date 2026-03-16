@@ -12,6 +12,7 @@ class MeasurementValue {
   String equipment;
   double? latitude;
   double? longitude;
+  String evaluation;
 
   bool get isFilled {
     bool hasValue = value > 0.0;
@@ -28,6 +29,7 @@ class MeasurementValue {
     this.equipment = "",
     this.latitude,
     this.longitude,
+    this.evaluation = "",
   });
 
   factory MeasurementValue.fromJson(Map<String, dynamic> json) {
@@ -40,6 +42,7 @@ class MeasurementValue {
       timestamp: json['timestamp'] ?? "",
       latitude: json['latitude']?.toDouble(),
       longitude: json['longitude']?.toDouble(),
+      evaluation: json['evaluation'] ?? "",
     );
   }
 
@@ -53,6 +56,7 @@ class MeasurementValue {
       'equipment': equipment,
       'latitude': latitude,
       'longitude': longitude,
+      'evaluation': evaluation,
     };
   }
 }
@@ -84,8 +88,9 @@ class PhaseGroup {
     // Helper to find keys like "Fase A" or "Fase A - ..."
     MeasurementValue find(String keyStart) {
       // Direct match
-      if (json.containsKey(keyStart))
+      if (json.containsKey(keyStart)) {
         return MeasurementValue.fromJson(json[keyStart]);
+      }
       // Fuzzy match for keys like "Fase A - H1-H2..."
       for (var k in json.keys) {
         if (k.startsWith(keyStart)) return MeasurementValue.fromJson(json[k]);
@@ -591,6 +596,7 @@ class FullInspection {
   Hipot hipot;
   Terrometro terrometro;
   ToquePasso toquePasso;
+  String identificacaoUrl;
 
   FullInspection({
     required this.megohmetro,
@@ -599,6 +605,7 @@ class FullInspection {
     required this.hipot,
     required this.terrometro,
     required this.toquePasso,
+    required this.identificacaoUrl,
   });
 
   factory FullInspection.fromJson(Map<String, dynamic> json) {
@@ -611,6 +618,7 @@ class FullInspection {
       toquePasso: ToquePasso.fromJson(
         json,
       ), // Note: ToquePasso is split into 3 keys in root, passing root
+      identificacaoUrl: json['IdentificacaoUrl'] ?? '',
     );
   }
 
@@ -621,6 +629,7 @@ class FullInspection {
       'TTR': ttr.toJson(),
       'Hipot': hipot.toJson(),
       'Terrometro': terrometro.toJson(),
+      'IdentificacaoUrl': identificacaoUrl,
     };
 
     // Because ToquePasso keys are at the root of the JSON (e.g., "Toque-Passo - Subestacao"),

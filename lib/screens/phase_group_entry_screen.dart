@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:sigma_app/models/measurements.dart';
+import 'package:sigma_app/models/plant_model.dart';
 import 'package:sigma_app/widgets/custom_header.dart';
 import 'package:sigma_app/widgets/equipments_dropdown.dart';
 import 'package:sigma_app/widgets/measurement_input_block.dart';
@@ -8,18 +9,20 @@ class PhaseGroupEntryScreen extends StatefulWidget {
   final String title;
   final PhaseGroup phaseGroup;
   final List<String> allowedUnits;
-  final String instrumentType; 
+  final String instrumentType;
   final String plantId;
   final String ufvId;
+  final UFV ufv;
 
   const PhaseGroupEntryScreen({
     super.key,
     required this.title,
     required this.phaseGroup,
     required this.allowedUnits,
-    required this.instrumentType, // Require it in the constructor
-    required this.plantId, // Require them in the constructor
-    required this.ufvId, // Require them in the constructor
+    required this.instrumentType,
+    required this.plantId,
+    required this.ufvId,
+    required this.ufv,
   });
 
   @override
@@ -63,8 +66,6 @@ class _PhaseGroupEntryScreenState extends State<PhaseGroupEntryScreen> {
   }
 
   void _saveData() {
-    // Notice we removed 'async' and 'Future'
-    // Basic validation before saving
     if (_selectedEquip == null || _selectedEquip!.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Por favor, selecione o equipamento.')),
@@ -72,19 +73,35 @@ class _PhaseGroupEntryScreenState extends State<PhaseGroupEntryScreen> {
       return;
     }
 
-    // 1. Update values and equipment locally (this updates the main UFV object by reference)
+    // --- 1. FIXED: Safely convert String with comma to double ---
     widget.phaseGroup.faseA.value =
-        double.tryParse(_faseAController.text) ?? 0.0;
+        double.tryParse(_faseAController.text.replaceAll(',', '.')) ?? 0.0;
     widget.phaseGroup.faseB.value =
-        double.tryParse(_faseBController.text) ?? 0.0;
+        double.tryParse(_faseBController.text.replaceAll(',', '.')) ?? 0.0;
     widget.phaseGroup.faseC.value =
-        double.tryParse(_faseCController.text) ?? 0.0;
+        double.tryParse(_faseCController.text.replaceAll(',', '.')) ?? 0.0;
+
     widget.phaseGroup.equipamento = _selectedEquip!;
 
-    // Note: The local image paths (/data/user/...) are ALREADY saved inside
-    // widget.phaseGroup by your MeasurementInputBlock when you take the photo!
+    // --- 2. FIXED: Add photo validation check ---
+    bool hasMissingPhotos =
+        [
+          widget.phaseGroup.faseA,
+          widget.phaseGroup.faseB,
+          widget.phaseGroup.faseC,
+        ].any((reading) {
+          return reading.value > 0 && reading.imageUrl.isEmpty;
+        });
 
-    // 2. Return to the previous screen and pass 'true' to signal a successful save
+    if (hasMissingPhotos) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Adicione fotos para todas as medições preenchidas.'),
+        ),
+      );
+      return;
+    }
+
     if (mounted) Navigator.pop(context, true);
   }
 
@@ -107,23 +124,30 @@ class _PhaseGroupEntryScreenState extends State<PhaseGroupEntryScreen> {
                       measurementValue: widget.phaseGroup.faseA,
                       controller: _faseAController,
                       allowedUnits: widget.allowedUnits,
+                      instrumentType: widget.instrumentType,
+                      ufv: widget.ufv,
                     ),
                     MeasurementInputBlock(
                       label: 'Fase B',
                       measurementValue: widget.phaseGroup.faseB,
                       controller: _faseBController,
                       allowedUnits: widget.allowedUnits,
+                      instrumentType: widget.instrumentType,
+                      ufv: widget.ufv,
                     ),
                     MeasurementInputBlock(
                       label: 'Fase C',
                       measurementValue: widget.phaseGroup.faseC,
                       controller: _faseCController,
                       allowedUnits: widget.allowedUnits,
+                      instrumentType: widget.instrumentType,
+                      ufv: widget.ufv,
                     ),
                     EquipmentDropdown(
                       measurementType: widget.instrumentType,
                       selectedValue: _selectedEquip,
-                      onChanged: (val) {
+                      // --- 3. FIXED: Explicitly declared the type as String? ---
+                      onChanged: (String? val) {
                         setState(() {
                           _selectedEquip = val;
                         });
