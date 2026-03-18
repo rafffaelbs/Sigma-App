@@ -26,7 +26,6 @@ class _DS {
   static const green = PdfColor.fromInt(0xFF1E8A44);
 
   // Spacing
-  // static const double xs  = 4;
   static const double sm = 8;
   static const double md = 16;
   static const double lg = 24;
@@ -46,8 +45,12 @@ class _DS {
 // ============================================================
 class PdfService {
   static Future<void> generateAndSaveReport(UFV ufv) async {
+    // IMPROVEMENT: Load both Regular and Bold fonts for crisp, professional rendering
     final ttf = await PdfGoogleFonts.robotoRegular();
-    final pdf = pw.Document(theme: pw.ThemeData.withFont(base: ttf));
+    final ttfBold = await PdfGoogleFonts.robotoBold();
+    final pdf = pw.Document(
+      theme: pw.ThemeData.withFont(base: ttf, bold: ttfBold),
+    );
 
     final ByteData imageBytes = await rootBundle.load('assets/logo.png');
     final pw.MemoryImage logoImage = pw.MemoryImage(
@@ -87,10 +90,7 @@ class PdfService {
         build: (pw.Context context) {
           return pw.Stack(
             children: [
-              // ── Full-bleed dark background ──
               pw.Positioned.fill(child: pw.Container(color: _DS.primary)),
-
-              // ── Decorative diagonal stripe (top-right) ──
               pw.Positioned(
                 top: 0,
                 right: 0,
@@ -106,29 +106,23 @@ class PdfService {
                   ),
                 ),
               ),
-
-              // ── Gold accent bar (left edge) ──
               pw.Positioned(
                 left: 0,
                 top: 0,
                 bottom: 0,
                 child: pw.Container(width: 6, color: _DS.gold),
               ),
-
-              // ── Content ──
               pw.Padding(
                 padding: const pw.EdgeInsets.fromLTRB(50, 60, 50, 50),
                 child: pw.Column(
                   crossAxisAlignment: pw.CrossAxisAlignment.start,
                   children: [
-                    // Logo placeholder + company name
                     pw.Row(
                       children: [
                         pw.Container(
                           width: 48,
                           height: 48,
                           decoration: pw.BoxDecoration(
-                            //color: _DS.gold,
                             borderRadius: _DS.radiusSm,
                           ),
                           child: pw.ClipRRect(
@@ -161,10 +155,7 @@ class PdfService {
                         ),
                       ],
                     ),
-
                     pw.Spacer(),
-
-                    // Category tag
                     pw.Container(
                       padding: const pw.EdgeInsets.symmetric(
                         horizontal: 12,
@@ -185,8 +176,6 @@ class PdfService {
                       ),
                     ),
                     pw.SizedBox(height: _DS.md),
-
-                    // Main title
                     pw.Text(
                       'Relatório de\nInspeção',
                       style: pw.TextStyle(
@@ -197,12 +186,8 @@ class PdfService {
                       ),
                     ),
                     pw.SizedBox(height: _DS.sm),
-
-                    // Gold divider
                     pw.Container(height: 3, width: 60, color: _DS.gold),
                     pw.SizedBox(height: _DS.lg),
-
-                    // UFV name
                     pw.Text(
                       ufv.name.toUpperCase(),
                       style: pw.TextStyle(
@@ -213,8 +198,6 @@ class PdfService {
                       ),
                     ),
                     pw.SizedBox(height: _DS.sm),
-
-                    // Meta row
                     pw.Row(
                       children: [
                         _coverMeta(
@@ -227,10 +210,7 @@ class PdfService {
                         _coverMeta('VERSÃO', 'v1.0'),
                       ],
                     ),
-
                     pw.Spacer(),
-
-                    // Footer strip
                     pw.Container(
                       padding: const pw.EdgeInsets.all(_DS.md),
                       decoration: pw.BoxDecoration(
@@ -289,7 +269,7 @@ class PdfService {
   }
 
   // ============================================================
-  //  GLOBAL HEADER (used on all content pages)
+  //  GLOBAL HEADER
   // ============================================================
   static pw.Widget Function(pw.Context) _buildGlobalHeader(
     pw.MemoryImage logoImage,
@@ -303,7 +283,6 @@ class PdfService {
               mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
               crossAxisAlignment: pw.CrossAxisAlignment.center,
               children: [
-                // Logo
                 pw.Row(
                   children: [
                     pw.Container(
@@ -335,8 +314,6 @@ class PdfService {
                     ),
                   ],
                 ),
-
-                // Page info chip
                 pw.Container(
                   padding: const pw.EdgeInsets.symmetric(
                     horizontal: 10,
@@ -357,9 +334,7 @@ class PdfService {
                 ),
               ],
             ),
-
             pw.SizedBox(height: 6),
-            // Dual-line rule: thin gold + thick navy
             pw.Stack(
               children: [
                 pw.Container(height: 3, color: _DS.primary),
@@ -379,16 +354,12 @@ class PdfService {
     };
   }
 
-  // ============================================================
-  //  SECTION TITLE
-  // ============================================================
   static pw.Widget _sectionTitle(String number, String title) {
     return pw.Container(
       margin: const pw.EdgeInsets.only(top: _DS.lg, bottom: _DS.sm),
       child: pw.Row(
         crossAxisAlignment: pw.CrossAxisAlignment.center,
         children: [
-          // Number badge
           pw.Container(
             width: 26,
             height: 26,
@@ -424,15 +395,10 @@ class PdfService {
     );
   }
 
-  // ============================================================
-  //  STYLED TABLE
-  // ============================================================
   static pw.Widget _styledTable({
     List<String>? headers,
     required List<List<String>> data,
-    //pw.Context? context,
   }) {
-    // Build rows
     List<pw.TableRow> rows = [];
 
     if (headers != null) {
@@ -507,9 +473,6 @@ class PdfService {
     );
   }
 
-  // ============================================================
-  //  STATUS BADGE
-  // ============================================================
   static pw.Widget _statusBadge(String status) {
     final s = status.toUpperCase();
     PdfColor bg;
@@ -539,8 +502,56 @@ class PdfService {
   }
 
   // ============================================================
-  //  INSTRUMENT HEADER (for measurement pages)
+  //  EVALUATION BADGE FOR PDF
   // ============================================================
+  static pw.Widget _pdfEvaluationBadge(String status) {
+    if (status == 'none' || status.isEmpty) return pw.SizedBox();
+
+    PdfColor bgColor;
+    PdfColor textColor;
+    String text;
+
+    switch (status) {
+      case 'aprovado':
+        bgColor = PdfColor.fromInt(0xFFE6F4EC);
+        textColor = _DS.green;
+        text = 'APROVADO';
+        break;
+      case 'alerta':
+        bgColor = PdfColor.fromInt(0xFFFEF3E1);
+        textColor = _DS.gold;
+        text = 'ALERTA';
+        break;
+      case 'reprovado':
+        bgColor = PdfColor.fromInt(0xFFFDE8E8);
+        textColor = _DS.red;
+        text = 'REPROVADO';
+        break;
+      default:
+        return pw.SizedBox();
+    }
+
+    return pw.Container(
+      padding: const pw.EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: pw.BoxDecoration(
+        color: bgColor,
+        borderRadius: _DS.radiusSm,
+        border: pw.Border.all(
+          color: PdfColor(textColor.red, textColor.green, textColor.blue, 0.5),
+          width: 0.5,
+        ),
+      ),
+      child: pw.Text(
+        text,
+        style: pw.TextStyle(
+          fontSize: 7.5,
+          fontWeight: pw.FontWeight.bold,
+          color: textColor,
+        ),
+      ),
+    );
+  }
+
   static pw.Widget _instrumentHeader(String instrument, String equipment) {
     return pw.Container(
       margin: const pw.EdgeInsets.only(bottom: _DS.md),
@@ -612,91 +623,6 @@ class PdfService {
     );
   }
 
-  // ============================================================
-  //  MEASUREMENT CARD
-  // ============================================================
-  static pw.Widget _measurementCard({
-    required String label,
-    required MeasurementValue measurement,
-  }) {
-    return pw.Container(
-      margin: const pw.EdgeInsets.only(bottom: _DS.sm),
-      decoration: pw.BoxDecoration(
-        color: _DS.white,
-        border: pw.Border.all(color: _DS.border, width: 0.5),
-        borderRadius: _DS.radiusMd,
-      ),
-      child: pw.Column(
-        crossAxisAlignment: pw.CrossAxisAlignment.start,
-        children: [
-          // Card header
-          pw.Container(
-            padding: const pw.EdgeInsets.symmetric(
-              horizontal: _DS.md,
-              vertical: _DS.sm,
-            ),
-            decoration: const pw.BoxDecoration(
-              color: _DS.accentLight,
-              borderRadius: pw.BorderRadius.only(
-                topLeft: pw.Radius.circular(8),
-                topRight: pw.Radius.circular(8),
-              ),
-            ),
-            child: pw.Row(
-              mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-              children: [
-                pw.Text(
-                  label,
-                  style: pw.TextStyle(
-                    fontSize: 10,
-                    fontWeight: pw.FontWeight.bold,
-                    color: _DS.primary,
-                  ),
-                ),
-                // Value chip
-                pw.Container(
-                  padding: const pw.EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 3,
-                  ),
-                  decoration: pw.BoxDecoration(
-                    color: _DS.accent,
-                    borderRadius: _DS.radiusSm,
-                  ),
-                  child: pw.Text(
-                    '${measurement.value} ${measurement.measurementUnit}',
-                    style: pw.TextStyle(
-                      fontSize: 10,
-                      fontWeight: pw.FontWeight.bold,
-                      color: _DS.white,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          // Card body
-          pw.Padding(
-            padding: const pw.EdgeInsets.all(_DS.md),
-            child: pw.Column(
-              crossAxisAlignment: pw.CrossAxisAlignment.start,
-              children: [
-                pw.Row(
-                  children: [_infoChip('Equipamento', measurement.equipment)],
-                ),
-                if (_hasImages(measurement)) ...[
-                  pw.SizedBox(height: _DS.sm),
-                  _buildImageRow(measurement),
-                ],
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   static pw.Widget _infoChip(String label, String value) {
     return pw.Row(
       children: [
@@ -724,13 +650,48 @@ class PdfService {
   }
 
   // ============================================================
-  //  SIDE-BY-SIDE IMAGES
+  //  MEASUREMENT CARD - WITH EVALUATION IN HEADER
   // ============================================================
-  static pw.Widget _buildImageRow(MeasurementValue measurement) {
+  static pw.Widget _measurementCard({
+    required String label,
+    required MeasurementValue measurement,
+  }) {
+    return pw.Container(
+      margin: const pw.EdgeInsets.only(bottom: _DS.sm),
+      decoration: pw.BoxDecoration(
+        color: _DS.white,
+        border: pw.Border.all(color: _DS.border, width: 0.5),
+        borderRadius: _DS.radiusMd,
+      ),
+      child: pw.Column(
+        crossAxisAlignment: pw.CrossAxisAlignment.start,
+        children: [
+          // Card header
+          // Card body - OPTIMIZED LAYOUT
+          pw.Padding(
+            padding: const pw.EdgeInsets.all(_DS.md),
+            child: pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.start,
+              children: [
+                if (_hasImages(measurement)) ...[
+                  _buildOptimizedImageRow(label, measurement),
+                ],
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  static pw.Widget _buildOptimizedImageRow(
+    String label,
+    MeasurementValue measurement,
+  ) {
     pw.Widget? measImage;
     pw.Widget? envImage;
 
-    const double fixedImageHeight = 170;
+    const double fixedImageSize = 120;
 
     pw.Widget? loadLocalImage(String path) {
       if (path.isNotEmpty && !path.startsWith('http')) {
@@ -739,36 +700,30 @@ class PdfService {
           if (file.existsSync()) {
             final imageBytes = file.readAsBytesSync();
             return pw.Container(
-              height: fixedImageHeight,
+              height: fixedImageSize,
+              width: fixedImageSize,
               child: pw.ClipRRect(
                 horizontalRadius: 6,
                 verticalRadius: 6,
-                child: pw.AspectRatio(
-                  aspectRatio: 4 / 5,
-                  child: pw.Image(
-                    pw.MemoryImage(imageBytes),
-                    fit: pw.BoxFit.cover,
-                  ),
+                child: pw.Image(
+                  pw.MemoryImage(imageBytes),
+                  fit: pw.BoxFit.cover,
                 ),
               ),
             );
           }
         } catch (_) {
           return pw.Container(
-            height: fixedImageHeight,
-            child: pw.AspectRatio(
-              aspectRatio: 4 / 5,
-              child: pw.Container(
-                decoration: pw.BoxDecoration(
-                  color: PdfColor.fromInt(0xFFFDE8E8),
-                  borderRadius: _DS.radiusSm,
-                ),
-                child: pw.Center(
-                  child: pw.Text(
-                    '[Erro]',
-                    style: const pw.TextStyle(fontSize: 8, color: _DS.red),
-                  ),
-                ),
+            height: fixedImageSize,
+            width: fixedImageSize,
+            decoration: pw.BoxDecoration(
+              color: PdfColor.fromInt(0xFFFDE8E8),
+              borderRadius: _DS.radiusSm,
+            ),
+            child: pw.Center(
+              child: pw.Text(
+                '[Erro]',
+                style: const pw.TextStyle(fontSize: 8, color: _DS.red),
               ),
             ),
           );
@@ -787,18 +742,19 @@ class PdfService {
         crossAxisAlignment: pw.CrossAxisAlignment.start,
         children: [
           pw.Container(
-            padding: const pw.EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+            padding: const pw.EdgeInsets.symmetric(horizontal: 6, vertical: 2),
             decoration: const pw.BoxDecoration(color: _DS.primary),
             child: pw.Text(
               label.toUpperCase(),
               style: pw.TextStyle(
-                fontSize: 7,
+                fontSize: 6.5,
                 fontWeight: pw.FontWeight.bold,
                 color: _DS.gold,
                 letterSpacing: 0.5,
               ),
             ),
           ),
+          pw.SizedBox(height: 4),
           child,
         ],
       );
@@ -806,11 +762,124 @@ class PdfService {
 
     return pw.Row(
       crossAxisAlignment: pw.CrossAxisAlignment.start,
-      mainAxisAlignment: pw.MainAxisAlignment.start,
       children: [
-        if (measImage != null) labeled('Medição', measImage),
-        if (measImage != null && envImage != null) pw.SizedBox(width: _DS.sm),
-        if (envImage != null) labeled('Ambiente', envImage),
+        // ── IMAGES (Left Side) ──
+        pw.Row(
+          crossAxisAlignment: pw.CrossAxisAlignment.start,
+          children: [
+            if (measImage != null) labeled('Medição', measImage),
+            if (measImage != null && envImage != null)
+              pw.SizedBox(width: _DS.sm),
+            if (envImage != null) labeled('Ambiente', envImage),
+          ],
+        ),
+
+        pw.SizedBox(width: _DS.md),
+
+        // ── DETAILS PANEL (Right Side) ──
+        pw.Expanded(
+          child: pw.Container(
+            height:
+                fixedImageSize + 15, // Matched roughly to image + label height
+            padding: const pw.EdgeInsets.all(10),
+            decoration: pw.BoxDecoration(
+              gradient: const pw.LinearGradient(
+                colors: [_DS.accentLight, _DS.white],
+                begin: pw.Alignment.topLeft,
+                end: pw.Alignment.bottomRight,
+              ),
+              borderRadius: _DS.radiusMd,
+              border: pw.Border.all(color: _DS.accent, width: 0.5),
+            ),
+            child: pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.start,
+              mainAxisAlignment: pw
+                  .MainAxisAlignment
+                  .spaceBetween, // Distributes top, middle, and bottom evenly
+              children: [
+                // --- TOP: Title & Divider ---
+                pw.Column(
+                  crossAxisAlignment: pw.CrossAxisAlignment.start,
+                  children: [
+                    pw.Text(
+                      label.toUpperCase(),
+                      style: pw.TextStyle(
+                        fontSize: 7.5,
+                        fontWeight: pw.FontWeight.bold,
+                        color: _DS.primary,
+                        letterSpacing: 0.8,
+                      ),
+                    ),
+                    pw.SizedBox(height: 4),
+                    pw.Container(height: 1, width: 40, color: _DS.accent),
+                  ],
+                ),
+
+                // --- MIDDLE: Highlighted Value & Equipment ---
+                pw.Column(
+                  crossAxisAlignment: pw.CrossAxisAlignment.start,
+                  children: [
+                    // Highlighted Value + Unit
+                    pw.Row(
+                      crossAxisAlignment: pw.CrossAxisAlignment.end,
+                      children: [
+                        pw.Text(
+                          '${measurement.value}',
+                          style: pw.TextStyle(
+                            fontSize: 22, // Large, highlighted number
+                            fontWeight: pw.FontWeight.bold,
+                            color: _DS.primary,
+                          ),
+                        ),
+                        pw.SizedBox(width: 4),
+                        pw.Padding(
+                          padding: const pw.EdgeInsets.only(bottom: 3),
+                          child: pw.Text(
+                            measurement.measurementUnit,
+                            style: pw.TextStyle(
+                              fontSize: 10,
+                              fontWeight: pw.FontWeight.bold,
+                              color: _DS.accent,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    pw.SizedBox(height: 8),
+
+                    // Equipment Name
+                    pw.Text(
+                      'EQUIPAMENTO',
+                      style: const pw.TextStyle(
+                        fontSize: 6,
+                        color: _DS.textMuted,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                    pw.SizedBox(height: 2),
+                    pw.Text(
+                      measurement.equipment,
+                      maxLines: 2,
+                      style: pw.TextStyle(
+                        fontSize: 8.5,
+                        fontWeight: pw.FontWeight.bold,
+                        color: _DS.textPrimary,
+                      ),
+                    ),
+                  ],
+                ),
+
+                // --- BOTTOM: Evaluation Badge ---
+                pw.Align(
+                  alignment: pw.Alignment.bottomLeft,
+                  child: _pdfEvaluationBadge(
+                    measurement.evaluation,
+                  ), // Uses your existing badge logic
+                ),
+              ],
+            ),
+          ),
+        ),
       ],
     );
   }
@@ -831,7 +900,7 @@ class PdfService {
         if (file.existsSync()) {
           identificacaoImageWidget = pw.Center(
             child: pw.Container(
-              height: 600, // Make it a nice size
+              height: 600,
               width: double.infinity,
               margin: const pw.EdgeInsets.only(top: 10, bottom: 20),
               child: pw.ClipRRect(
@@ -845,9 +914,7 @@ class PdfService {
             ),
           );
         }
-      } catch (_) {
-        // Ignore error if image fails to load
-      }
+      } catch (_) {}
     }
 
     pdf.addPage(
@@ -936,8 +1003,8 @@ class PdfService {
 
             pw.SizedBox(height: _DS.xl),
 
-            // Observations box
             pw.Container(
+              width: double.infinity,
               padding: const pw.EdgeInsets.all(_DS.md),
               decoration: pw.BoxDecoration(
                 color: _DS.surface,
@@ -963,7 +1030,6 @@ class PdfService {
 
             pw.SizedBox(height: _DS.lg),
 
-            // Signatures
             pw.Container(
               padding: const pw.EdgeInsets.all(_DS.md),
               decoration: pw.BoxDecoration(
@@ -993,7 +1059,6 @@ class PdfService {
     );
   }
 
-  /// Table where certain columns render as status badges
   static pw.Widget _buildStatusTable({
     List<String>? headers,
     required List<List<String>> data,
@@ -1108,22 +1173,19 @@ class PdfService {
               credential,
               style: const pw.TextStyle(fontSize: 8, color: _DS.textSecondary),
             ),
-            pw.SizedBox(height: _DS.lg),
-            pw.Container(height: 0.5, color: _DS.border),
-            pw.SizedBox(height: 4),
-            pw.Text(
-              'Assinatura',
-              style: const pw.TextStyle(fontSize: 7, color: _DS.textMuted),
-            ),
+            // pw.SizedBox(height: _DS.lg),
+            // pw.Container(height: 0.5, color: _DS.border),
+            // pw.SizedBox(height: 4),
+            // pw.Text(
+            //  'Assinatura',
+            //  style: const pw.TextStyle(fontSize: 7, color: _DS.textMuted),
+            // ),
           ],
         ),
       ),
     );
   }
 
-  // ============================================================
-  //  MEGOHMETRO
-  // ============================================================
   static void _addMegohmetroPages(
     pw.Document pdf,
     Megohmetro meg,
@@ -1182,9 +1244,6 @@ class PdfService {
     );
   }
 
-  // ============================================================
-  //  PHASE GROUP SECTION
-  // ============================================================
   static void _addPhaseGroupSection(
     pw.Document pdf,
     String instrument,
@@ -1203,7 +1262,6 @@ class PdfService {
           List<pw.Widget> content = [_instrumentHeader(instrument, title)];
 
           groupMap.forEach((key, phaseGroup) {
-            // Group header
             content.add(
               pw.Container(
                 margin: const pw.EdgeInsets.only(top: _DS.md, bottom: _DS.sm),
@@ -1256,9 +1314,6 @@ class PdfService {
     );
   }
 
-  // ============================================================
-  //  DYNAMIC GROUP MAP SECTION
-  // ============================================================
   static void _addDynamicGroupMapSection(
     pw.Document pdf,
     String instrumentName,
@@ -1319,9 +1374,6 @@ class PdfService {
     );
   }
 
-  // ============================================================
-  //  MICROOHMIMETRO
-  // ============================================================
   static void _addMicroohmimetroPages(
     pw.Document pdf,
     Microohmimetro micro,
@@ -1357,9 +1409,6 @@ class PdfService {
     );
   }
 
-  // ============================================================
-  //  TTR
-  // ============================================================
   static void _addTtrPages(pw.Document pdf, Ttr ttr, pw.MemoryImage logoImage) {
     _addDynamicGroupMapSection(
       pdf,
@@ -1380,9 +1429,6 @@ class PdfService {
     }
   }
 
-  // ============================================================
-  //  HIPOT
-  // ============================================================
   static void _addHipotPages(
     pw.Document pdf,
     Hipot hipot,
@@ -1397,9 +1443,6 @@ class PdfService {
     );
   }
 
-  // ============================================================
-  //  TERROMETRO
-  // ============================================================
   static void _addTerrometroPages(
     pw.Document pdf,
     Terrometro terro,
@@ -1423,9 +1466,6 @@ class PdfService {
     );
   }
 
-  // ============================================================
-  //  TOQUE-PASSO
-  // ============================================================
   static void _addToquePassoPages(
     pw.Document pdf,
     ToquePasso toque,

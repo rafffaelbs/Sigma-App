@@ -194,7 +194,7 @@ class _CustomCameraScreenState extends State<CustomCameraScreen> {
           // 4:5 Viewfinder
           Center(
             child: AspectRatio(
-              aspectRatio: 4 / 5,
+              aspectRatio: 1 / 1,
               child: CameraPreview(_controller!),
             ),
           ),

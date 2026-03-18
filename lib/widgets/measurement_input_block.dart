@@ -188,10 +188,13 @@ class _MeasurementInputBlockState extends State<MeasurementInputBlock> {
 
             // --- NEW: Display the evaluation badge right below the input ---
             if (widget.measurementValue.evaluation != 'none')
-              Padding(
-                padding: const EdgeInsets.only(top: 12.0),
-                child: _buildEvaluationBadge(
-                  widget.measurementValue.evaluation,
+              SizedBox(
+                width: double.infinity,
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 12.0),
+                  child: _buildEvaluationBadge(
+                    widget.measurementValue.evaluation,
+                  ),
                 ),
               ),
           ],
@@ -237,21 +240,23 @@ class _MeasurementInputBlockState extends State<MeasurementInputBlock> {
         borderRadius: BorderRadius.circular(6),
         border: Border.all(color: textColor.withOpacity(0.3)),
       ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 14, color: textColor),
-          const SizedBox(width: 6),
-          Text(
-            text,
-            style: TextStyle(
-              color: textColor,
-              fontWeight: FontWeight.bold,
-              fontSize: 11,
-              letterSpacing: 0.5,
+      child: Center(
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 14, color: textColor),
+            const SizedBox(width: 6),
+            Text(
+              text,
+              style: TextStyle(
+                color: textColor,
+                fontWeight: FontWeight.bold,
+                fontSize: 11,
+                letterSpacing: 0.5,
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
