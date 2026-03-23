@@ -691,7 +691,7 @@ class PdfService {
     pw.Widget? measImage;
     pw.Widget? envImage;
 
-    const double fixedImageSize = 120;
+    const double fixedImageSize = 130;
 
     pw.Widget? loadLocalImage(String path) {
       if (path.isNotEmpty && !path.startsWith('http')) {
@@ -737,29 +737,6 @@ class PdfService {
 
     if (measImage == null && envImage == null) return pw.SizedBox();
 
-    pw.Widget labeled(String label, pw.Widget child) {
-      return pw.Column(
-        crossAxisAlignment: pw.CrossAxisAlignment.start,
-        children: [
-          pw.Container(
-            padding: const pw.EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-            decoration: const pw.BoxDecoration(color: _DS.primary),
-            child: pw.Text(
-              label.toUpperCase(),
-              style: pw.TextStyle(
-                fontSize: 6.5,
-                fontWeight: pw.FontWeight.bold,
-                color: _DS.gold,
-                letterSpacing: 0.5,
-              ),
-            ),
-          ),
-          pw.SizedBox(height: 4),
-          child,
-        ],
-      );
-    }
-
     return pw.Row(
       crossAxisAlignment: pw.CrossAxisAlignment.start,
       children: [
@@ -767,10 +744,10 @@ class PdfService {
         pw.Row(
           crossAxisAlignment: pw.CrossAxisAlignment.start,
           children: [
-            if (measImage != null) labeled('Medição', measImage),
+            if (measImage != null) measImage,
             if (measImage != null && envImage != null)
               pw.SizedBox(width: _DS.sm),
-            if (envImage != null) labeled('Ambiente', envImage),
+            if (envImage != null) envImage,
           ],
         ),
 
@@ -779,8 +756,7 @@ class PdfService {
         // ── DETAILS PANEL (Right Side) ──
         pw.Expanded(
           child: pw.Container(
-            height:
-                fixedImageSize + 15, // Matched roughly to image + label height
+            height: fixedImageSize + 10,
             padding: const pw.EdgeInsets.all(10),
             decoration: pw.BoxDecoration(
               gradient: const pw.LinearGradient(
@@ -792,14 +768,14 @@ class PdfService {
               border: pw.Border.all(color: _DS.accent, width: 0.5),
             ),
             child: pw.Column(
-              crossAxisAlignment: pw.CrossAxisAlignment.start,
+              crossAxisAlignment: pw.CrossAxisAlignment.center,
               mainAxisAlignment: pw
                   .MainAxisAlignment
                   .spaceBetween, // Distributes top, middle, and bottom evenly
               children: [
                 // --- TOP: Title & Divider ---
                 pw.Column(
-                  crossAxisAlignment: pw.CrossAxisAlignment.start,
+                  crossAxisAlignment: pw.CrossAxisAlignment.center,
                   children: [
                     pw.Text(
                       label.toUpperCase(),
@@ -817,11 +793,12 @@ class PdfService {
 
                 // --- MIDDLE: Highlighted Value & Equipment ---
                 pw.Column(
-                  crossAxisAlignment: pw.CrossAxisAlignment.start,
+                  crossAxisAlignment: pw.CrossAxisAlignment.center,
                   children: [
                     // Highlighted Value + Unit
                     pw.Row(
                       crossAxisAlignment: pw.CrossAxisAlignment.end,
+                      mainAxisAlignment: pw.MainAxisAlignment.center,
                       children: [
                         pw.Text(
                           '${measurement.value}',
@@ -860,6 +837,7 @@ class PdfService {
                     pw.Text(
                       measurement.equipment,
                       maxLines: 2,
+                      textAlign: pw.TextAlign.center,
                       style: pw.TextStyle(
                         fontSize: 8.5,
                         fontWeight: pw.FontWeight.bold,
@@ -871,7 +849,7 @@ class PdfService {
 
                 // --- BOTTOM: Evaluation Badge ---
                 pw.Align(
-                  alignment: pw.Alignment.bottomLeft,
+                  alignment: pw.Alignment.bottomCenter,
                   child: _pdfEvaluationBadge(
                     measurement.evaluation,
                   ), // Uses your existing badge logic
@@ -917,14 +895,14 @@ class PdfService {
       } catch (_) {}
     }
 
-    pdf.addPage(
-      pw.MultiPage(
-        pageFormat: PdfPageFormat.a4,
-        margin: const pw.EdgeInsets.symmetric(horizontal: 42, vertical: 36),
-        header: _buildGlobalHeader(logoImage),
-        build: (pw.Context context) {
-          return [
-            if (identificacaoImageWidget != null) ...[
+    if (identificacaoImageWidget != null) {
+      pdf.addPage(
+        pw.MultiPage(
+          pageFormat: PdfPageFormat.a4,
+          margin: const pw.EdgeInsets.symmetric(horizontal: 42, vertical: 36),
+          header: _buildGlobalHeader(logoImage),
+          build: (pw.Context context) {
+            return [
               pw.SizedBox(height: 10),
               pw.Text(
                 'FOTO DE IDENTIFICAÇÃO (PLACA)',
@@ -934,16 +912,43 @@ class PdfService {
                   color: _DS.primary,
                 ),
               ),
-              identificacaoImageWidget,
-            ],
+              identificacaoImageWidget!,
+              pw.SizedBox(height: 50),
+            ];
+          },
+        ),
+      );
+    }
 
+    pdf.addPage(
+      pw.MultiPage(
+        pageFormat: PdfPageFormat.a4,
+        margin: const pw.EdgeInsets.symmetric(horizontal: 42, vertical: 36),
+        header: _buildGlobalHeader(logoImage),
+        build: (pw.Context context) {
+          return [
             _sectionTitle('1', 'Dados do Projeto e Ambiente'),
             _styledTable(
               data: [
-                ['Projeto', 'UFV - CGH', 'Temp. Ambiente', '29°C'],
-                ['Local', 'CAIAPONIA-GO', 'Umidade', '69%'],
-                ['Identificação', 'RFP-5038', 'Classe (kV)', '36'],
-                ['Contratante', 'GRUPO BC ENERGIA', 'Data', '11/20/2025'],
+                [
+                  'Projeto',
+                  ufv.name,
+                  'Temp. Ambiente',
+                  ufv.tempAmbiente.isNotEmpty ? ufv.tempAmbiente : 'N/A',
+                ],
+                [
+                  'Local',
+                  'UFV - ${ufv.name}',
+                  'Umidade',
+                  ufv.umidade.isNotEmpty ? ufv.umidade : 'N/A',
+                ],
+                [
+                  'Identificação',
+                  ufv.nSerie.isNotEmpty ? ufv.nSerie : 'N/A',
+                  'Classe (kV)',
+                  ufv.classeKv.isNotEmpty ? ufv.classeKv : 'N/A',
+                ],
+                ['Data', DateTime.now().toString().substring(0, 10), '', ''],
               ],
             ),
 
@@ -951,10 +956,30 @@ class PdfService {
             _buildStatusTable(
               headers: ['Proteção Geral', 'Estado', 'Proteção Local', 'Estado'],
               data: [
-                ['Estado Geral', 'BOM', 'Estado Geral', 'BOM'],
-                ['Relé Proteção', 'OK', 'Relé Proteção', 'OK'],
-                ['Nobreak', 'OK', 'Nobreak', 'OK'],
-                ['Seccionamento', 'OK', 'Seccionamento', 'OK'],
+                [
+                  'Estado Geral',
+                  ufv.estadoGeralProtecaoGeral.toUpperCase(),
+                  'Estado Geral',
+                  ufv.estadoGeralProtecaoLocal.toUpperCase(),
+                ],
+                [
+                  'Relé Proteção',
+                  ufv.releProtecaoGeral.toUpperCase(),
+                  'Relé Proteção',
+                  ufv.releProtecaoLocal.toUpperCase(),
+                ],
+                [
+                  'Nobreak',
+                  ufv.nobreakGeral.toUpperCase(),
+                  'Nobreak',
+                  ufv.nobreakLocal.toUpperCase(),
+                ],
+                [
+                  'Seccionamento',
+                  ufv.seccionamentoGeral.toUpperCase(),
+                  'Seccionamento',
+                  ufv.seccionamentoLocal.toUpperCase(),
+                ],
               ],
               statusColumns: [1, 3],
             ),
@@ -962,46 +987,100 @@ class PdfService {
             _sectionTitle('3', 'Dados do Transformador'),
             _styledTable(
               data: [
-                ['Dados', 'PLACA', 'Frequência (Hz)', '60'],
-                ['Fechamento', 'ESTRELA DELTA', 'Peso (Kg)', '4070'],
-                ['Marca', 'TAMURA', 'Volume Óleo', '-'],
-                ['Tipo', 'SECO', 'IP', '0'],
-                ['N. Série', '4706301002', 'Data Fabricação', '12/1/2024'],
-                ['Fator K', '4', 'Tap 1 (V)', '34500'],
-                ['Rel. Transformação', '34500 / 800 / 462', 'Tap 2-5 (V)', '-'],
-                ['Potência kVA', '1000', 'Impedância', '6.16'],
+                [
+                  'Dados',
+                  'PLACA',
+                  'Frequência (Hz)',
+                  ufv.frequencia != 0 ? ufv.frequencia.toString() : '-',
+                ],
+                [
+                  'Fechamento',
+                  ufv.fechamento.isNotEmpty ? ufv.fechamento : '-',
+                  'Peso (Kg)',
+                  ufv.peso != 0 ? ufv.peso.toString() : '-',
+                ],
+                [
+                  'Marca',
+                  ufv.marca.isNotEmpty ? ufv.marca : '-',
+                  'Volume Óleo',
+                  ufv.volumeOleo != 0 ? ufv.volumeOleo.toString() : '-',
+                ],
+                ['Tipo', 'SECO', 'IP', ufv.ip != 0 ? ufv.ip.toString() : '0'],
+                [
+                  'N. Série',
+                  ufv.nSerie.isNotEmpty ? ufv.nSerie : '-',
+                  'Data Fabricação',
+                  ufv.dataFabricacao.isNotEmpty ? ufv.dataFabricacao : '-',
+                ],
+                [
+                  'Fator K',
+                  ufv.fatorK != 0 ? ufv.fatorK.toString() : '-',
+                  'Tap 1 (V)',
+                  ufv.tensaoPrimaria != 0 ? ufv.tensaoPrimaria.toString() : '-',
+                ],
+                [
+                  'Rel. Transformação',
+                  ufv.relacaoNominal != 0 ? ufv.relacaoNominal.toString() : '-',
+                  'Tap 2 (V)',
+                  '-',
+                ],
+                [
+                  'Potência kVA',
+                  ufv.potenciaKva != 0 ? ufv.potenciaKva.toString() : '-',
+                  'Impedância',
+                  ufv.impedancia != 0 ? ufv.impedancia.toString() : '-',
+                ],
               ],
             ),
 
-            _sectionTitle('4', 'Inspeção Visual e Proteções Físicas'),
+            _sectionTitle('4', 'Inspeção Visual'),
             _buildStatusTable(
-              headers: [
-                'Item Inspecionado',
-                'Status',
-                'Proteções Físicas',
-                'Status',
-              ],
+              headers: ['Item Inspecionado', 'Status'],
               data: [
-                ['Estado Geral', 'BOM', 'Relé Temp. Digital', 'NA'],
-                ['Bobina 1, 2, 3', 'OK', 'PT-100 Bobina 1, 2, 3', 'OK'],
-                ['H0 - Bucha MT', 'NA', 'Ventilação Forçada', 'NA'],
-                ['H1, H2, H3 (MT)', 'OK', 'Termômetro (Óleo)', 'NA'],
-                ['X0, X1, X2, X3 (BT)', 'OK', 'Pressostato (Óleo)', 'NA'],
-                ['Vazamento Óleo', 'NA', 'Nível de Óleo', 'NA'],
+                ['Estado Geral', ufv.estadoGeralInspecao.toUpperCase()],
+                ['Bobina 1 (Trafo a Seco)', ufv.bobina1.toUpperCase()],
+                ['Bobina 2 (Trafo a Seco)', ufv.bobina2.toUpperCase()],
+                ['Bobina 3 (Trafo a Seco)', ufv.bobina3.toUpperCase()],
+                ['H0 - Bucha MT', ufv.h0BuchaMt.toUpperCase()],
+                ['H1 - Bucha MT', ufv.h1BuchaMt.toUpperCase()],
+                ['H2 - Bucha MT', ufv.h2BuchaMt.toUpperCase()],
+                ['H3 - Bucha MT', ufv.h3BuchaMt.toUpperCase()],
+                ['X0 - Bucha BT', ufv.x0BuchaBt.toUpperCase()],
+                ['X1 - Bucha BT', ufv.x1BuchaBt.toUpperCase()],
+                ['X2 - Bucha BT', ufv.x2BuchaBt.toUpperCase()],
+                ['X3 - Bucha BT', ufv.x3BuchaBt.toUpperCase()],
+                [
+                  'Vazamento Óleo Carcaça',
+                  ufv.vazamentoOleoCarcaca.toUpperCase(),
+                ],
               ],
-              statusColumns: [1, 3],
+              statusColumns: [1],
             ),
 
-            _sectionTitle('5', 'Trafo de Aterramento / Reator'),
-            _styledTable(
+            _sectionTitle('5', 'Proteções Físicas'),
+            _buildStatusTable(
+              headers: ['Item Inspecionado', 'Status'],
               data: [
-                ['Dados / Fechamento', '-', 'Estado Geral', 'NA'],
-                ['Marca / Tipo', '-', 'Bobinas 1, 2, 3', 'NA'],
-                ['N. Série / Data Fab.', '-', '', ''],
+                [
+                  'Relé Temperatura Digital',
+                  ufv.releTemperaturaDigital.toUpperCase(),
+                ],
+                ['PT-100 Bobina 1 (Seco)', ufv.pt100Bobina1.toUpperCase()],
+                ['PT-100 Bobina 2 (Seco)', ufv.pt100Bobina2.toUpperCase()],
+                ['PT-100 Bobina 3 (Seco)', ufv.pt100Bobina3.toUpperCase()],
+                ['Ventilação Forçada', ufv.ventilacaoForcada.toUpperCase()],
+                [
+                  'PT-100 / Termômetro (Óleo)',
+                  ufv.pt100TermometroOleo.toUpperCase(),
+                ],
+                ['Pressostato (Óleo)', ufv.pressostatoOleo.toUpperCase()],
+                ['Nível de Óleo (Óleo)', ufv.nivelOleo.toUpperCase()],
+                ['Análise de Óleo', ufv.analiseOleo.toUpperCase()],
               ],
+              statusColumns: [1],
             ),
 
-            pw.SizedBox(height: _DS.xl),
+            _sectionTitle('6', 'Trafo de Aterramento / Reator'),
 
             pw.Container(
               width: double.infinity,
@@ -1023,6 +1102,17 @@ class PdfService {
                       letterSpacing: 0.5,
                     ),
                   ),
+                  pw.SizedBox(height: _DS.sm),
+                  pw.Text(
+                    ufv.observacoes.isNotEmpty
+                        ? ufv.observacoes
+                        : 'Nenhuma observação registrada.',
+                    style: const pw.TextStyle(
+                      fontSize: 8,
+                      color: _DS.textPrimary,
+                      height: 1.4,
+                    ),
+                  ),
                   pw.SizedBox(height: _DS.lg + 20),
                 ],
               ),
@@ -1041,14 +1131,22 @@ class PdfService {
                 children: [
                   _signatureBlock(
                     'EXECUTANTE',
-                    'LUIZ ANTÔNIO BARBOSA',
-                    'CFT-BR: 02127271173',
+                    ufv.executanteNome.isNotEmpty
+                        ? ufv.executanteNome
+                        : 'NOME DO EXECUTANTE',
+                    ufv.executanteCft.isNotEmpty
+                        ? 'CFT-BR: ${ufv.executanteCft}'
+                        : 'CFT-BR: [INFORMAR]',
                   ),
                   pw.Container(width: 0.5, color: _DS.border),
                   _signatureBlock(
                     'ENGENHEIRO RESPONSÁVEL',
-                    'THALLES NUNES',
-                    'CREA: 20287/D-GO · CREA-GO: 38.517/RF',
+                    ufv.engenheiroNome.isNotEmpty
+                        ? ufv.engenheiroNome
+                        : 'NOME DO ENGENHEIRO',
+                    ufv.engenheiroCrea.isNotEmpty
+                        ? 'CREA: ${ufv.engenheiroCrea}'
+                        : 'CREA: [INFORMAR]',
                   ),
                 ],
               ),

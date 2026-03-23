@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:image/image.dart' as img;
 import 'package:path_provider/path_provider.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 class CustomCameraScreen extends StatefulWidget {
   final List<String> allowedUnits;
@@ -24,44 +25,188 @@ class _CustomCameraScreenState extends State<CustomCameraScreen> {
   @override
   void initState() {
     super.initState();
-    _initializeCamera();
-    _startLocationUpdates(); // Starts the stream immediately
+    _requestPermissionsAndInitialize();
+  }
+
+  // Unified permission request method
+  Future<void> _requestPermissionsAndInitialize() async {
+    try {
+      print("Starting permission request...");
+
+      // Try unified permission request first
+      Map<Permission, PermissionStatus> currentStatuses = await [
+        Permission.camera,
+        Permission.location,
+        Permission.locationWhenInUse,
+      ].request();
+
+      print("Permission statuses: $currentStatuses");
+
+      // Check if all permissions are granted
+      bool cameraGranted =
+          currentStatuses[Permission.camera]?.isGranted ?? false;
+      bool locationGranted =
+          (currentStatuses[Permission.location]?.isGranted ?? false) ||
+          (currentStatuses[Permission.locationWhenInUse]?.isGranted ?? false);
+
+      print(
+        "Camera granted: $cameraGranted, Location granted: $locationGranted",
+      );
+
+      if (cameraGranted && locationGranted) {
+        // Both permissions granted, proceed with initialization
+        print("Permissions granted, initializing camera and location...");
+        await _initializeCamera();
+        _startLocationUpdates();
+      } else {
+        // Try fallback approach if unified approach didn't work
+        print("Trying fallback approach...");
+        await _fallbackPermissionRequest();
+      }
+    } catch (e) {
+      print("Permission request error: $e");
+      print("Stack trace: ${StackTrace.current}");
+
+      // Try one more time with the fallback approach
+      try {
+        print("Last resort: trying fallback approach...");
+        await _fallbackPermissionRequest();
+      } catch (fallbackError) {
+        print("All permission approaches failed: $fallbackError");
+
+        // Show more detailed error message
+        String errorMessage = "Erro ao solicitar permissões";
+        if (e.toString().contains("PermissionHandler")) {
+          errorMessage =
+              "Erro no sistema de permissões. Tente reiniciar o app.";
+        } else if (e.toString().contains("Camera") ||
+            fallbackError.toString().contains("Camera")) {
+          errorMessage =
+              "Erro ao acessar a câmera. Verifique se o dispositivo tem câmera.";
+        } else if (e.toString().contains("Location") ||
+            fallbackError.toString().contains("Location")) {
+          errorMessage =
+              "Erro ao acessar localização. Verifique se o GPS está ativado.";
+        } else if (fallbackError.toString().contains("negada")) {
+          errorMessage =
+              "Permissões foram negadas. Por favor, habilite nas configurações do app.";
+        }
+
+        _showErrorDialog(errorMessage);
+      }
+    }
+  }
+
+  void _showPermissionDeniedDialog(bool cameraGranted, bool locationGranted) {
+    String message = "";
+    if (!cameraGranted && !locationGranted) {
+      message =
+          "É necessário conceder permissões de câmera e localização para usar esta funcionalidade.";
+    } else if (!cameraGranted) {
+      message =
+          "É necessário conceder permissão de câmera para usar esta funcionalidade.";
+    } else {
+      message =
+          "É necessário conceder permissão de localização para usar esta funcionalidade.";
+    }
+
+    if (mounted) {
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text("Permissões Necessárias"),
+          content: Text(message),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text("Cancelar"),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+                openAppSettings(); // Opens app settings
+              },
+              child: const Text("Configurações"),
+            ),
+          ],
+        ),
+      );
+    }
+  }
+
+  void _showErrorDialog(String message) {
+    if (mounted) {
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text("Erro"),
+          content: Text(message),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text("OK"),
+            ),
+          ],
+        ),
+      );
+    }
   }
 
   Future<void> _initializeCamera() async {
-    final cameras = await availableCameras();
-    if (cameras.isEmpty) return;
-
-    _controller = CameraController(
-      cameras.first,
-      ResolutionPreset.high, // Balanced resolution for processing
-      enableAudio: false,
-    );
-
     try {
+      print("Initializing camera...");
+      final cameras = await availableCameras();
+      if (cameras.isEmpty) {
+        throw Exception("Nenhuma câmera encontrada no dispositivo");
+      }
+
+      _controller = CameraController(
+        cameras.first,
+        ResolutionPreset.high, // Balanced resolution for processing
+        enableAudio: false,
+      );
+
       await _controller!.initialize();
+      print("Camera initialized successfully");
       if (mounted) setState(() {});
     } catch (e) {
-      // ignore: avoid_print
       print("Camera initialization error: $e");
+      throw e; // Re-throw to handle in the main permission method
+    }
+  }
+
+  // Fallback method using the original approach
+  Future<void> _fallbackPermissionRequest() async {
+    try {
+      print("Trying fallback permission request...");
+
+      // Request location permission first
+      LocationPermission locationPermission =
+          await Geolocator.checkPermission();
+      if (locationPermission == LocationPermission.denied) {
+        locationPermission = await Geolocator.requestPermission();
+        if (locationPermission == LocationPermission.denied) {
+          throw Exception("Permissão de localização negada");
+        }
+      }
+
+      // Then initialize camera (will request camera permission)
+      await _initializeCamera();
+      _startLocationUpdates();
+    } catch (e) {
+      print("Fallback permission request failed: $e");
+      throw e;
     }
   }
 
   void _startLocationUpdates() async {
-    // 1. Request/Check Permissions to wake up hardware
-    LocationPermission permission = await Geolocator.checkPermission();
-    if (permission == LocationPermission.denied) {
-      permission = await Geolocator.requestPermission();
-      if (permission == LocationPermission.denied) return;
-    }
-
-    // 2. Get last known position for instant display
+    // 1. Get last known position for instant display
     final lastPos = await Geolocator.getLastKnownPosition();
     if (lastPos != null && mounted) {
       setState(() => _currentPosition = lastPos);
     }
 
-    // 3. Subscribe to live updates with Balanced accuracy
+    // 2. Subscribe to live updates with Balanced accuracy
     _positionStream =
         Geolocator.getPositionStream(
           locationSettings: const LocationSettings(
@@ -102,13 +247,13 @@ class _CustomCameraScreenState extends State<CustomCameraScreen> {
       img.Image? capturedImg = img.decodeImage(bytes);
 
       if (capturedImg != null) {
-        // 2. CROP TO 4:5 RATIO
+        // 2. CROP TO 1:1 RATIO
         int targetWidth = capturedImg.width;
-        int targetHeight = (targetWidth * 5) ~/ 4;
+        int targetHeight = capturedImg.width; // square
 
         if (targetHeight > capturedImg.height) {
           targetHeight = capturedImg.height;
-          targetWidth = (targetHeight * 4) ~/ 5;
+          targetWidth = capturedImg.height; // square
         }
 
         int x = (capturedImg.width - targetWidth) ~/ 2;
@@ -201,7 +346,7 @@ class _CustomCameraScreenState extends State<CustomCameraScreen> {
 
           // REAL-TIME OVERLAY
           Positioned(
-            bottom: 200,
+            bottom: 250,
             left: 20,
 
             child: Container(
