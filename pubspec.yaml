@@ -37,6 +37,7 @@ dependencies:
   cupertino_icons: ^1.0.8
   firebase_core: ^4.4.0
   cloud_firestore: ^6.1.2
+  firebase_auth: ^6.1.4
   image_picker: ^1.2.1
   geolocator: ^14.0.2
   intl: ^0.20.2
@@ -50,6 +51,7 @@ dependencies:
   pdf: ^3.11.3
   printing: ^5.14.2
   flutter_dotenv: ^6.0.0
+  supabase_flutter: ^2.12.0
 
 dev_dependencies:
   flutter_test:

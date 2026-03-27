@@ -84,6 +84,8 @@ class LocalSyncService {
       // 4. Commit the batch to the cloud (All or Nothing)
       await batch.commit();
 
+      //await clearQueue();
+
       // 5. (Optional) Clear the local storage after a successful sync
       // await clearLocalStorage();
     } catch (e) {

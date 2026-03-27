@@ -75,6 +75,35 @@ class PdfService {
     );
   }
 
+  // Generates the PDF silently in the background and returns the raw bytes
+  static Future<Uint8List> generatePdfBytes(UFV ufv) async {
+    final ttf = await PdfGoogleFonts.robotoRegular();
+    final ttfBold = await PdfGoogleFonts.robotoBold();
+    final pdf = pw.Document(
+      theme: pw.ThemeData.withFont(base: ttf, bold: ttfBold),
+    );
+
+    final ByteData imageBytes = await rootBundle.load('assets/logo.png');
+    final pw.MemoryImage logoImage = pw.MemoryImage(
+      imageBytes.buffer.asUint8List(),
+    );
+
+    _addCoverPage(pdf, ufv, logoImage);
+    _addPlantInfoPage(pdf, ufv, logoImage);
+
+    if (ufv.measurements != null) {
+      _addMegohmetroPages(pdf, ufv.measurements!.megohmetro, logoImage);
+      _addMicroohmimetroPages(pdf, ufv.measurements!.microohmimetro, logoImage);
+      _addTtrPages(pdf, ufv.measurements!.ttr, logoImage);
+      _addHipotPages(pdf, ufv.measurements!.hipot, logoImage);
+      _addTerrometroPages(pdf, ufv.measurements!.terrometro, logoImage);
+      _addToquePassoPages(pdf, ufv.measurements!.toquePasso, logoImage);
+    }
+
+    // INSTEAD of Printing.layoutPdf, we just return the raw data!
+    return await pdf.save();
+  }
+
   // ============================================================
   //  COVER PAGE
   // ============================================================
@@ -988,8 +1017,8 @@ class PdfService {
             _styledTable(
               data: [
                 [
-                  'Dados',
-                  'PLACA',
+                  'Data Fabricação',
+                  ufv.dataFabricacao.isNotEmpty ? ufv.dataFabricacao : '-',
                   'Frequência (Hz)',
                   ufv.frequencia != 0 ? ufv.frequencia.toString() : '-',
                 ],
@@ -1009,8 +1038,8 @@ class PdfService {
                 [
                   'N. Série',
                   ufv.nSerie.isNotEmpty ? ufv.nSerie : '-',
-                  'Data Fabricação',
-                  ufv.dataFabricacao.isNotEmpty ? ufv.dataFabricacao : '-',
+                  'Potência kVA',
+                  ufv.potenciaKva != 0 ? ufv.potenciaKva.toString() : '-',
                 ],
                 [
                   'Fator K',
@@ -1021,18 +1050,12 @@ class PdfService {
                 [
                   'Rel. Transformação',
                   ufv.relacaoNominal != 0 ? ufv.relacaoNominal.toString() : '-',
-                  'Tap 2 (V)',
-                  '-',
-                ],
-                [
-                  'Potência kVA',
-                  ufv.potenciaKva != 0 ? ufv.potenciaKva.toString() : '-',
                   'Impedância',
                   ufv.impedancia != 0 ? ufv.impedancia.toString() : '-',
                 ],
               ],
             ),
-
+            pw.SizedBox(height: 110),
             _sectionTitle('4', 'Inspeção Visual'),
             _buildStatusTable(
               headers: ['Item Inspecionado', 'Status'],

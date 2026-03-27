@@ -4,7 +4,7 @@ import 'package:sigma_app/screens/select_ufv.dart';
 import 'package:sigma_app/widgets/custom_header.dart';
 import 'package:sigma_app/widgets/plant_button.dart';
 // Ensure your Plant model is imported correctly
-import '../models/plant_model.dart'; 
+import '../models/plant_model.dart';
 
 class SelectPlant extends StatelessWidget {
   const SelectPlant({super.key});
@@ -17,17 +17,35 @@ class SelectPlant extends StatelessWidget {
         child: Column(
           children: [
             CustomHeader(title: 'Selecione a Usina'),
-            
+
             // Replaced the simple ListView with a StreamBuilder
             Expanded(
               child: StreamBuilder<QuerySnapshot>(
                 // 1. Point the stream to your 'plants' collection
-                stream: FirebaseFirestore.instance.collection('plants').snapshots(),
+                stream: FirebaseFirestore.instance
+                    .collection('plants')
+                    .snapshots(),
                 builder: (context, snapshot) {
-                  
                   // 2. Handle connection errors
                   if (snapshot.hasError) {
-                    return const Center(child: Text('Erro ao carregar as usinas.'));
+                    print('Erro ao carregar usinas: ${snapshot.error}');
+                    return Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Text('Erro ao carregar as usinas.'),
+                          const SizedBox(height: 10),
+                          Text(
+                            '${snapshot.error}',
+                            style: const TextStyle(
+                              fontSize: 12,
+                              color: Colors.red,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
+                      ),
+                    );
                   }
 
                   // 3. Handle loading state
@@ -37,14 +55,18 @@ class SelectPlant extends StatelessWidget {
 
                   // 4. Handle empty database state
                   if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                    return const Center(child: Text('Nenhuma usina encontrada no banco de dados.'));
+                    return const Center(
+                      child: Text(
+                        'Nenhuma usina encontrada no banco de dados.',
+                      ),
+                    );
                   }
 
                   // 5. Convert Firestore documents into your Plant objects
                   final plants = snapshot.data!.docs.map((doc) {
                     final data = doc.data() as Map<String, dynamic>;
                     // Assuming your Plant.fromMap handles the ID correctly inside the map
-                    return Plant.fromMap(data); 
+                    return Plant.fromMap(data);
                   }).toList();
 
                   // 6. Render your UI exactly as before

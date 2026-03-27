@@ -1,6 +1,8 @@
 import 'dart:io';
+import 'dart:typed_data';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:sigma_app/models/measurements.dart';
 import 'package:sigma_app/models/plant_model.dart';
@@ -81,8 +83,82 @@ class UploadService {
       }
     }
   }
-}
 
+  /// Faz o upload de um PDF gerado em memória (Uint8List) diretamente para o Firebase
+  static Future<String> uploadPdfBytes(
+    Uint8List pdfBytes,
+    String plantId,
+    String ufvId,
+  ) async {
+    try {
+      // Validate inputs
+      if (pdfBytes.isEmpty) {
+        throw Exception('PDF bytes está vazio');
+      }
+
+      if (plantId.isEmpty || ufvId.isEmpty) {
+        throw Exception('Plant ID ou UFV ID está vazio');
+      }
+
+      print(
+        'Validação passada - PDF: ${pdfBytes.length} bytes, Plant: $plantId, UFV: $ufvId',
+      );
+
+      // Create a clean file name
+      String fileName =
+          'Relatorio_${ufvId}_${DateTime.now().millisecondsSinceEpoch}.pdf';
+
+      // Create the path: plants/plantId/ufvId/reports/filename.pdf
+      Reference ref = FirebaseStorage.instance
+          .ref()
+          .child('plants')
+          .child(plantId)
+          .child(ufvId)
+          .child('reports')
+          .child(fileName);
+
+      print("Iniciando upload do PDF para: ${ref.fullPath}");
+
+      // Upload the raw bytes and tell Firebase it is a PDF
+      UploadTask uploadTask = ref.putData(
+        pdfBytes,
+        SettableMetadata(contentType: 'application/pdf'),
+      );
+
+      // Listen to upload progress
+      uploadTask.snapshotEvents.listen((TaskSnapshot snapshot) {
+        print(
+          "Upload progress: ${(snapshot.bytesTransferred / snapshot.totalBytes) * 100}%",
+        );
+      });
+
+      TaskSnapshot snapshot = await uploadTask;
+      print("Upload do PDF concluído! Status: ${snapshot.state}");
+
+      // Return the public URL
+      String downloadUrl = await snapshot.ref.getDownloadURL();
+      print("URL de download gerada: $downloadUrl");
+
+      return downloadUrl;
+    } catch (e) {
+      print("ERRO UPLOAD PDF: $e");
+      print("Stack trace: ${StackTrace.current}");
+
+      // Provide more specific error messages
+      if (e.toString().contains('object-not-found')) {
+        print(
+          "ERRO: Referência do Firebase Storage não encontrada. Verifique se o caminho está correto.",
+        );
+      } else if (e.toString().contains('permission-denied')) {
+        print(
+          "ERRO: Sem permissão para upload. Verifique as regras do Firebase Storage.",
+        );
+      }
+
+      return "";
+    }
+  }
+}
 
 class FirebaseService {
   Future<void> uploadInitialDataToFirebase(BuildContext context) async {
@@ -368,12 +444,12 @@ class FirebaseService {
         hipot: paranoaHipot,
         terrometro: paranoaTerrometro,
         toquePasso: paranoaToquePasso,
-        identificacaoUrl: '', 
+        identificacaoUrl: '',
       );
 
       var ufvParanoa = UFV(
         id: 'UFV 1.1',
-        name: 'Paranoá UFV 1.1',
+        name: 'Paranoa UFV 1.1',
         fechamento: 'Estrela',
         marca: 'WEG',
         nSerie: 'WEG-998877',
@@ -392,8 +468,8 @@ class FirebaseService {
       );
 
       var usinaParanoa = Plant(
-        id: 'Paranoá',
-        name: 'Usina Paranoá',
+        id: 'Paranoa',
+        name: 'Usina Paranoa',
         local: 'Brasilia - DF',
         ufvs: [ufvParanoa], // Add the UFV to the plant's list
       );
@@ -452,7 +528,7 @@ class FirebaseService {
 
       var ufvPanama = UFV(
         id: 'UFV 1.1',
-        name: 'Panamá UFV 1.1',
+        name: 'Panama UFV 1.1',
         fechamento: 'Delta',
         marca: 'Siemens',
         nSerie: 'SIEMENS-554433',
@@ -471,30 +547,29 @@ class FirebaseService {
       );
 
       var usinaPanama = Plant(
-        id: 'Panamá',
-        name: 'Usina Panamá',
+        id: 'Panama',
+        name: 'Usina Panama',
         local: 'Brasilia - DF',
         ufvs: [ufvPanama],
       );
 
-      CollectionReference plantCollection = FirebaseFirestore.instance.collection(
-        'plants',
-      );
+      CollectionReference plantCollection = FirebaseFirestore.instance
+          .collection('plants');
 
-      // Save Paranoá
+      // Save Paranoa
       await plantCollection.doc(usinaParanoa.id).set(usinaParanoa.toMap());
 
-      // Save Panamá
+      // Save Panama
       await plantCollection.doc(usinaPanama.id).set(usinaPanama.toMap());
 
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('${usinaPanama.name} salva com sucesso!'),
-          backgroundColor: Colors.green,
-        ),
-      );
-    }
+          SnackBar(
+            content: Text('${usinaPanama.name} salva com sucesso!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
     } catch (e) {
       // 5. Show error message if it fails
       if (context.mounted) {
@@ -507,5 +582,5 @@ class FirebaseService {
       }
       print("Failed to save to Firebase: $e");
     }
-  }    
+  }
 }

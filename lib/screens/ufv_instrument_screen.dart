@@ -1,5 +1,8 @@
+import 'dart:typed_data';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart'; // <-- NEW: Required for the camera
+import 'package:image_picker/image_picker.dart';
 import 'package:sigma_app/models/plant_model.dart';
 import 'package:sigma_app/models/measurements.dart';
 import 'package:sigma_app/screens/dynamic_folder_screen.dart';
@@ -8,6 +11,7 @@ import 'package:sigma_app/screens/phase_group_entry_screen.dart';
 import 'package:sigma_app/screens/dynamic_group_entry_screen.dart';
 import 'package:sigma_app/services/local_sync_service.dart';
 import 'package:sigma_app/services/pdf_service.dart';
+import 'package:sigma_app/services/supabase_service.dart';
 import 'package:sigma_app/widgets/custom_header.dart';
 import 'package:sigma_app/widgets/plant_button.dart';
 
@@ -29,7 +33,7 @@ class UfvInstrumentsScreen extends StatelessWidget {
     final ter = inspection.terrometro.getProgress();
     final toq = inspection.toquePasso.getProgress();
 
-    // --- UPDATED: Add +1 to total items for the Identificação photo ---
+    // Add +1 to total items for the Identificação photo
     int totalItems =
         meg.total +
         mic.total +
@@ -39,7 +43,7 @@ class UfvInstrumentsScreen extends StatelessWidget {
         toq.total +
         1;
 
-    // --- UPDATED: Check if identificacaoUrl is not empty ---
+    // Check if identificacaoUrl is not empty
     int identCompleted = inspection.identificacaoUrl.isNotEmpty ? 1 : 0;
 
     int completedItems =
@@ -55,7 +59,54 @@ class UfvInstrumentsScreen extends StatelessWidget {
     return totalItems > 0 && totalItems == completedItems;
   }
 
-  // --- NEW: Function to handle picking the Identificação image ---
+  // --- FIX: Added BuildContext as a parameter to use SnackBars safely in a StatelessWidget ---
+  Future<void> _generateAndUploadReport(
+    BuildContext context,
+    Plant plant,
+    UFV ufv,
+  ) async {
+    try {
+      // 1. Gera o PDF na memória (como Uint8List)
+      Uint8List pdfBytes = await PdfService.generatePdfBytes(ufv);
+
+      // 2. Faz upload para o SUPABASE
+      String pdfDownloadUrl = await SupabaseStorageService.uploadPdfBytes(
+        pdfBytes,
+        plant.id,
+        ufv.id,
+      );
+
+      if (pdfDownloadUrl.isNotEmpty) {
+        // 3. Salva a URL pública gerada no FIREBASE FIRESTORE
+        await FirebaseFirestore.instance
+            .collection('plants')
+            .doc(plant.id)
+            .update({'ufvs.${ufv.id}.reportUrl': pdfDownloadUrl});
+
+        // --- FIX: Use context.mounted ---
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Sucesso! Relatório salvo e linkado na nuvem.'),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
+      } else {
+        throw Exception("Falha ao gerar URL pública do Supabase.");
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erro ao enviar relatório: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
   Future<void> _pickIdentificacaoImage(
     BuildContext context,
     FullInspection inspection,
@@ -94,6 +145,7 @@ class UfvInstrumentsScreen extends StatelessWidget {
         // Save it to your local database
         await LocalSyncService.savePlantLocally(plant);
 
+        // --- FIX: Use context.mounted ---
         if (context.mounted) {
           // Refresh the UI to update the progress counter
           (context as Element).markNeedsBuild();
@@ -144,7 +196,6 @@ class UfvInstrumentsScreen extends StatelessWidget {
     List<Widget> buildInstrumentButtons() {
       List<Widget> buttons = [];
 
-      // --- NEW: Add the Identificação button at the very top ---
       buttons.add(
         Padding(
           padding: const EdgeInsets.only(bottom: 16),
@@ -171,6 +222,7 @@ class UfvInstrumentsScreen extends StatelessWidget {
           ),
         ),
       );
+
       void addButton(
         String title,
         InspectionProgress prog,
@@ -186,8 +238,10 @@ class UfvInstrumentsScreen extends StatelessWidget {
                 totalCount: prog.total,
                 onTap: () async {
                   await onTap();
-                  (context as Element)
-                      .markNeedsBuild(); // Refresh UI after returning
+                  if (context.mounted) {
+                    (context as Element)
+                        .markNeedsBuild(); // Refresh UI after returning
+                  }
                 },
               ),
             ),
@@ -230,15 +284,15 @@ class UfvInstrumentsScreen extends StatelessWidget {
       body: SafeArea(
         child: Column(
           children: [
-            CustomHeader(title: 'Instrumentos'),
-            SizedBox(height: 20),
+            const CustomHeader(title: 'Instrumentos'),
+            const SizedBox(height: 20),
             Container(
               margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 5),
               width: double.infinity,
-              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
               alignment: Alignment.center,
               decoration: BoxDecoration(
-                color: Color(0xFFFFFFFF),
+                color: const Color(0xFFFFFFFF),
                 border: Border.all(color: Colors.black, width: 1.5),
               ),
               child: Text(
@@ -265,10 +319,13 @@ class UfvInstrumentsScreen extends StatelessWidget {
           ? FloatingActionButton.extended(
               onPressed: () async {
                 // Show a loading indicator in case images are large
-                ScaffoldMessenger.of(
-                  context,
-                ).showSnackBar(const SnackBar(content: Text('Gerando PDF...')));
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Gerando e Enviando PDF...')),
+                );
+
+                // --- FIX: Pass context, plant, and ufv to the function! ---
                 await PdfService.generateAndSaveReport(ufv);
+                await _generateAndUploadReport(context, plant, ufv);
               },
               backgroundColor: Colors.black,
               icon: const Icon(Icons.picture_as_pdf, color: Colors.white),
@@ -277,7 +334,7 @@ class UfvInstrumentsScreen extends StatelessWidget {
                 style: TextStyle(color: Colors.white),
               ),
             )
-          : null, // Shows nothing if not 100% complete
+          : null,
     );
   }
 
@@ -353,9 +410,7 @@ class UfvInstrumentsScreen extends StatelessWidget {
                       megUnits,
                       'Megohmetro',
                     );
-                    setFolderState(
-                      () {},
-                    ); // Refresh Folder UI when returning from sub-folder
+                    setFolderState(() {});
                   },
                 ),
               );
@@ -597,7 +652,7 @@ class UfvInstrumentsScreen extends StatelessWidget {
   // LEVEL 2 ROUTING: TTR
   // ==========================================
   Future<void> _openTtrFolders(BuildContext context, Ttr ttr) async {
-    final List<String> ttrUnits = ['V/V', 'kV/V']; // Adjust units as needed
+    final List<String> ttrUnits = ['V/V', 'kV/V'];
 
     await Navigator.push(
       context,
@@ -629,7 +684,6 @@ class UfvInstrumentsScreen extends StatelessWidget {
               );
             }
 
-            // Transformador de Potencial and Corrente are single PhaseGroups
             void addSinglePhaseGroup(String title, PhaseGroup group) {
               final prog = group.getProgress();
               folders.add(
@@ -739,7 +793,6 @@ class UfvInstrumentsScreen extends StatelessWidget {
           builder: (context, setFolderState) {
             List<FolderOption> folders = [];
 
-            // Subestacao is a single DynamicGroup
             if (ter.subestacao != null) {
               final prog = ter.subestacao!.getProgress();
               folders.add(
@@ -771,7 +824,6 @@ class UfvInstrumentsScreen extends StatelessWidget {
               );
             }
 
-            // Transformadores is a Map of DynamicGroups
             if (ter.transformadores.isNotEmpty) {
               int completed = ter.transformadores.values
                   .where((e) => e.isFullyComplete)
@@ -946,7 +998,7 @@ class UfvInstrumentsScreen extends StatelessWidget {
                         instrumentType: instrumentType,
                         plantId: plant.id,
                         ufvId: ufv.id,
-                        ufv: ufv
+                        ufv: ufv,
                       ),
                     ),
                   );

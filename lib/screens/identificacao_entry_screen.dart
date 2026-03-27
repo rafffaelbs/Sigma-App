@@ -1,6 +1,5 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:sigma_app/models/plant_model.dart';
 import 'package:sigma_app/services/custom_camera_screen.dart';
 import 'package:sigma_app/services/local_sync_service.dart';

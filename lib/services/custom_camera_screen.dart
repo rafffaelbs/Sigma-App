@@ -171,7 +171,7 @@ class _CustomCameraScreenState extends State<CustomCameraScreen> {
       if (mounted) setState(() {});
     } catch (e) {
       print("Camera initialization error: $e");
-      throw e; // Re-throw to handle in the main permission method
+      rethrow; // Re-throw to handle in the main permission method
     }
   }
 
@@ -195,7 +195,7 @@ class _CustomCameraScreenState extends State<CustomCameraScreen> {
       _startLocationUpdates();
     } catch (e) {
       print("Fallback permission request failed: $e");
-      throw e;
+      rethrow;
     }
   }
 

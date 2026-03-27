@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:sigma_app/models/plant_model.dart';
 import 'package:sigma_app/screens/edit_ufv.dart';
 import 'package:sigma_app/screens/ufv_instrument_screen.dart';
+import 'package:sigma_app/services/local_sync_service.dart';
 import 'package:sigma_app/widgets/custom_header.dart';
 import 'package:sigma_app/widgets/plant_button.dart';
 
@@ -15,6 +16,30 @@ class SelectUfv extends StatefulWidget {
 }
 
 class _SelectUfvState extends State<SelectUfv> {
+  Plant? _loadedPlant;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadPlantFromStorage();
+  }
+
+  Future<void> _loadPlantFromStorage() async {
+    // Try to load the plant from local storage (updated version)
+    final pendingPlants = await LocalSyncService.getPendingPlants();
+    final storedPlant = pendingPlants.firstWhere(
+      (p) => p.id == widget.plant.id,
+      orElse: () => widget.plant,
+    );
+
+    if (mounted) {
+      setState(() {
+        _loadedPlant = storedPlant;
+      });
+    }
+  }
+
+  Plant get _currentPlant => _loadedPlant ?? widget.plant;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -34,7 +59,7 @@ class _SelectUfvState extends State<SelectUfv> {
                 border: Border.all(color: Colors.black, width: 1.5),
               ),
               child: Text(
-                widget.plant.name.toUpperCase(),
+                _currentPlant.name.toUpperCase(),
                 style: const TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 18,
@@ -46,9 +71,9 @@ class _SelectUfvState extends State<SelectUfv> {
             Expanded(
               child: ListView.builder(
                 padding: const EdgeInsets.all(20),
-                itemCount: widget.plant.ufvs.length,
+                itemCount: _currentPlant.ufvs.length,
                 itemBuilder: (context, index) {
-                  var ufv = widget.plant.ufvs[index];
+                  var ufv = _currentPlant.ufvs[index];
 
                   return Padding(
                     padding: const EdgeInsetsGeometry.only(bottom: 16),
@@ -60,7 +85,7 @@ class _SelectUfvState extends State<SelectUfv> {
                           MaterialPageRoute(
                             builder: (context) => UfvInstrumentsScreen(
                               ufv: ufv,
-                              plant: widget.plant,
+                              plant: _currentPlant,
                             ),
                           ),
                         );
@@ -70,22 +95,27 @@ class _SelectUfvState extends State<SelectUfv> {
                           context,
                           MaterialPageRoute(
                             builder: (context) =>
-                                EditUfv(plant: widget.plant, ufv: ufv),
+                                EditUfv(plant: _currentPlant, ufv: ufv),
                           ),
                         );
 
                         if (result != null && result is UFV) {
                           setState(() {
                             // 1. Find the exact position of this UFV in the plant's list
-                            int index = widget.plant.ufvs.indexWhere(
+                            int index = _currentPlant.ufvs.indexWhere(
                               (u) => u.id == ufv.id,
                             );
 
                             // 2. Replace the old UFV with the newly edited one
                             if (index != -1) {
-                              widget.plant.ufvs[index] = result;
+                              _currentPlant.ufvs[index] = result;
                             }
                           });
+
+                          // 3. Save the updated plant to local storage
+                          await LocalSyncService.savePlantLocally(
+                            _currentPlant,
+                          );
                         }
                       },
                     ),

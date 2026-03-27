@@ -141,41 +141,75 @@ class _EditUfvState extends State<EditUfv> {
     classeKvController = TextEditingController(text: widget.ufv.classeKv);
 
     // 3. Init Proteção Geral e Local
-    estadoGeralProtecaoGeralController = TextEditingController(text: 'Bom');
-    releProtecaoGeralController = TextEditingController(text: 'OK');
-    nobreakGeralController = TextEditingController(text: 'OK');
-    seccionamentoGeralController = TextEditingController(text: 'OK');
+    estadoGeralProtecaoGeralController = TextEditingController(
+      text: widget.ufv.estadoGeralProtecaoGeral,
+    );
+    releProtecaoGeralController = TextEditingController(
+      text: widget.ufv.releProtecaoGeral,
+    );
+    nobreakGeralController = TextEditingController(
+      text: widget.ufv.nobreakGeral,
+    );
+    seccionamentoGeralController = TextEditingController(
+      text: widget.ufv.seccionamentoGeral,
+    );
 
-    estadoGeralProtecaoLocalController = TextEditingController(text: 'Bom');
-    releProtecaoLocalController = TextEditingController(text: 'OK');
-    nobreakLocalController = TextEditingController(text: 'OK');
-    seccionamentoLocalController = TextEditingController(text: 'OK');
+    estadoGeralProtecaoLocalController = TextEditingController(
+      text: widget.ufv.estadoGeralProtecaoLocal,
+    );
+    releProtecaoLocalController = TextEditingController(
+      text: widget.ufv.releProtecaoLocal,
+    );
+    nobreakLocalController = TextEditingController(
+      text: widget.ufv.nobreakLocal,
+    );
+    seccionamentoLocalController = TextEditingController(
+      text: widget.ufv.seccionamentoLocal,
+    );
 
     // 4. Init Inspeção Visual
-    estadoGeralInspecaoController = TextEditingController(text: 'Bom');
-    bobina1Controller = TextEditingController(text: 'OK');
-    bobina2Controller = TextEditingController(text: 'OK');
-    bobina3Controller = TextEditingController(text: 'OK');
-    h0BuchaMtController = TextEditingController(text: 'NA');
-    h1BuchaMtController = TextEditingController(text: 'OK');
-    h2BuchaMtController = TextEditingController(text: 'OK');
-    h3BuchaMtController = TextEditingController(text: 'OK');
-    x0BuchaBtController = TextEditingController(text: 'OK');
-    x1BuchaBtController = TextEditingController(text: 'OK');
-    x2BuchaBtController = TextEditingController(text: 'OK');
-    x3BuchaBtController = TextEditingController(text: 'OK');
-    vazamentoOleoCarcacaController = TextEditingController(text: 'NA');
+    estadoGeralInspecaoController = TextEditingController(
+      text: widget.ufv.estadoGeralInspecao,
+    );
+    bobina1Controller = TextEditingController(text: widget.ufv.bobina1);
+    bobina2Controller = TextEditingController(text: widget.ufv.bobina2);
+    bobina3Controller = TextEditingController(text: widget.ufv.bobina3);
+    h0BuchaMtController = TextEditingController(text: widget.ufv.h0BuchaMt);
+    h1BuchaMtController = TextEditingController(text: widget.ufv.h1BuchaMt);
+    h2BuchaMtController = TextEditingController(text: widget.ufv.h2BuchaMt);
+    h3BuchaMtController = TextEditingController(text: widget.ufv.h3BuchaMt);
+    x0BuchaBtController = TextEditingController(text: widget.ufv.x0BuchaBt);
+    x1BuchaBtController = TextEditingController(text: widget.ufv.x1BuchaBt);
+    x2BuchaBtController = TextEditingController(text: widget.ufv.x2BuchaBt);
+    x3BuchaBtController = TextEditingController(text: widget.ufv.x3BuchaBt);
+    vazamentoOleoCarcacaController = TextEditingController(
+      text: widget.ufv.vazamentoOleoCarcaca,
+    );
 
     // 5. Init Proteções Físicas
-    releTemperaturaDigitalController = TextEditingController(text: 'NA');
-    pt100Bobina1Controller = TextEditingController(text: 'OK');
-    pt100Bobina2Controller = TextEditingController(text: 'OK');
-    pt100Bobina3Controller = TextEditingController(text: 'OK');
-    ventilacaoForcadaController = TextEditingController(text: 'NA');
-    pt100TermometroOleoController = TextEditingController(text: 'NA');
-    pressostatoOleoController = TextEditingController(text: 'NA');
-    nivelOleoController = TextEditingController(text: 'NA');
-    analiseOleoController = TextEditingController(text: 'NA');
+    releTemperaturaDigitalController = TextEditingController(
+      text: widget.ufv.releTemperaturaDigital,
+    );
+    pt100Bobina1Controller = TextEditingController(
+      text: widget.ufv.pt100Bobina1,
+    );
+    pt100Bobina2Controller = TextEditingController(
+      text: widget.ufv.pt100Bobina2,
+    );
+    pt100Bobina3Controller = TextEditingController(
+      text: widget.ufv.pt100Bobina3,
+    );
+    ventilacaoForcadaController = TextEditingController(
+      text: widget.ufv.ventilacaoForcada,
+    );
+    pt100TermometroOleoController = TextEditingController(
+      text: widget.ufv.pt100TermometroOleo,
+    );
+    pressostatoOleoController = TextEditingController(
+      text: widget.ufv.pressostatoOleo,
+    );
+    nivelOleoController = TextEditingController(text: widget.ufv.nivelOleo);
+    analiseOleoController = TextEditingController(text: widget.ufv.analiseOleo);
 
     // 6. Init Assinaturas e Obs
     executanteNomeController = TextEditingController(
@@ -263,22 +297,33 @@ class _EditUfvState extends State<EditUfv> {
         marca: marcaController.text,
         nSerie: nSerieController.text,
         fatorK: double.tryParse(fatorKController.text) ?? widget.ufv.fatorK,
-        tensaoPrimaria: double.tryParse(tensaoPrimariaController.text) ?? widget.ufv.tensaoPrimaria,
-        relacaoNominal: double.tryParse(relacaoNominalController.text) ?? widget.ufv.relacaoNominal,
-        tensaoSecundaria: double.tryParse(tensaoSecundariaController.text) ?? widget.ufv.tensaoSecundaria,
-        potenciaKva: double.tryParse(potenciaKvaController.text) ?? widget.ufv.potenciaKva,
-        impedancia: double.tryParse(impedanciaController.text) ?? widget.ufv.impedancia,
-        frequencia: double.tryParse(frequenciaController.text) ?? widget.ufv.frequencia,
+        tensaoPrimaria:
+            double.tryParse(tensaoPrimariaController.text) ??
+            widget.ufv.tensaoPrimaria,
+        relacaoNominal:
+            double.tryParse(relacaoNominalController.text) ??
+            widget.ufv.relacaoNominal,
+        tensaoSecundaria:
+            double.tryParse(tensaoSecundariaController.text) ??
+            widget.ufv.tensaoSecundaria,
+        potenciaKva:
+            double.tryParse(potenciaKvaController.text) ??
+            widget.ufv.potenciaKva,
+        impedancia:
+            double.tryParse(impedanciaController.text) ?? widget.ufv.impedancia,
+        frequencia:
+            double.tryParse(frequenciaController.text) ?? widget.ufv.frequencia,
         peso: double.tryParse(pesoController.text) ?? widget.ufv.peso,
         ip: int.tryParse(ipController.text) ?? widget.ufv.ip,
         dataFabricacao: dataFabricacaoController.text,
-        volumeOleo: double.tryParse(volumeOleoController.text) ?? widget.ufv.volumeOleo,
-        
+        volumeOleo:
+            double.tryParse(volumeOleoController.text) ?? widget.ufv.volumeOleo,
+
         // -- PROJETO E AMBIENTE --
         tempAmbiente: tempAmbienteController.text,
         umidade: umidadeController.text,
         classeKv: classeKvController.text,
-        
+
         // -- PROTEÇÃO GERAL --
         estadoGeralProtecaoGeral: estadoGeralProtecaoGeralController.text,
         releProtecaoGeral: releProtecaoGeralController.text,
@@ -329,22 +374,32 @@ class _EditUfvState extends State<EditUfv> {
 
       if (mounted) {
         Navigator.pop(context); // Closes the loading dialog
-        Navigator.pop(context, updatedUfv); // Closes the screen AND passes the new data back
+        Navigator.pop(
+          context,
+          updatedUfv,
+        ); // Closes the screen AND passes the new data back
 
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Dados salvos com sucesso'), backgroundColor: Colors.green),
+          const SnackBar(
+            content: Text('Dados salvos com sucesso'),
+            backgroundColor: Colors.green,
+          ),
         );
       }
     } catch (e) {
       if (mounted) {
-        Navigator.pop(context); 
+        Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erro ao salvar: $e'), backgroundColor: Colors.red),
+          SnackBar(
+            content: Text('Erro ao salvar: $e'),
+            backgroundColor: Colors.red,
+          ),
         );
       }
     }
   }
-    Widget _buildSectionTitle(String title) {
+
+  Widget _buildSectionTitle(String title) {
     return Padding(
       padding: const EdgeInsets.only(top: 10, bottom: 15),
       child: Text(

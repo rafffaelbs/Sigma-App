@@ -64,8 +64,8 @@ class PlantService {
     ),
     Plant(
       id: '2',
-      local: 'PARANOÁ-GO',
-      name: 'PARANOÁ',
+      local: 'PARANOA-GO',
+      name: 'PARANOA',
       ufvs: [
         UFV(
           name: 'UFV 1.1',
