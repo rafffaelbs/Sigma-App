@@ -4,14 +4,25 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 class SupabaseStorageService {
   /// Faz upload de uma imagem (File) para o Supabase Storage
+  /// Se a imagem já foi uploadada (URL começa com http), retorna a URL existente
   static Future<String> uploadImage(
     File imageFile,
     String plantId,
     String ufvId,
+    String measurementType, // --- NEW: Megohmetro, Microohmimetro, TTR, etc.
     String label,
+    String? existingUrl, // --- NEW: Para verificar se já foi uploadado
   ) async {
     try {
-      // Verifica se a foto realmente existe
+      // --- NEW: Se já tem URL do Supabase, não faz upload novamente
+      if (existingUrl != null &&
+          existingUrl.isNotEmpty &&
+          existingUrl.startsWith('http')) {
+        print("Imagem já existe no Supabase: $existingUrl");
+        return existingUrl;
+      }
+
+      // Verifica se o arquivo local existe
       if (!imageFile.existsSync()) {
         print("ERRO: Arquivo de imagem não existe: ${imageFile.path}");
         return "";
@@ -23,17 +34,18 @@ class SupabaseStorageService {
           .replaceAll('.', '_')
           .replaceAll(RegExp(r'[^a-zA-Z0-9_]'), '');
 
-      // 2. Nome do arquivo: label_timestamp.jpg
-      String fileName = '${label}_${DateTime.now().millisecondsSinceEpoch}.jpg';
-      String filePath = '$safePlantId/$safeUfvId/images/$fileName';
+      // 2. Nome simples sem timestamp (ex: FaseA.jpg) - permite sobrescrita
+      String fileName = '${label}.jpg';
+      // 3. Organizado em pastas por tipo de medição
+      String filePath = '$safePlantId/$safeUfvId/$measurementType/$fileName';
 
       final supabase = Supabase.instance.client;
       print("Iniciando upload de imagem: $filePath");
 
-      // 3. Lê o arquivo como bytes
+      // 4. Lê o arquivo como bytes
       Uint8List fileBytes = await imageFile.readAsBytes();
 
-      // 4. Faz o upload
+      // 5. Faz o upload com upsert (sobrescreve se existir)
       await supabase.storage
           .from('images')
           .uploadBinary(
@@ -41,11 +53,11 @@ class SupabaseStorageService {
             fileBytes,
             fileOptions: const FileOptions(
               contentType: 'image/jpeg',
-              upsert: true,
+              upsert: true, // --- Permite sobrescrever imagens existentes
             ),
           );
 
-      // 5. Retorna URL pública
+      // 6. Retorna URL pública
       String publicUrl = supabase.storage.from('images').getPublicUrl(filePath);
       print("Upload de imagem concluído! URL: $publicUrl");
 

@@ -12,14 +12,17 @@ class UploadService {
     File imageFile,
     String plantId,
     String ufvId,
+    String measurementType, // --- NEW: Megohmetro, Microohmimetro, etc.
     String label,
+    String? existingUrl, // --- NEW: Skip if already uploaded
   ) async {
-    // --- CHANGED: Delegate to SupabaseStorageService instead of Firebase
     return await SupabaseStorageService.uploadImage(
       imageFile,
       plantId,
       ufvId,
+      measurementType,
       label,
+      existingUrl,
     );
   }
 
@@ -28,29 +31,32 @@ class UploadService {
     required Map<String, MeasurementValue> readings,
     required String plantId,
     required String ufvId,
+    required String measurementType, // --- NEW: Folder name in Supabase
   }) async {
     for (var entry in readings.entries) {
       MeasurementValue measurement = entry.value;
 
-      // Upload Measurement Image
-      if (measurement.imageUrl.isNotEmpty &&
-          !measurement.imageUrl.startsWith('http')) {
+      // Upload Measurement Image (skip if already uploaded - has http URL)
+      if (measurement.imageUrl.isNotEmpty) {
         measurement.imageUrl = await uploadFile(
           File(measurement.imageUrl),
           plantId,
           ufvId,
+          measurementType,
           entry.key,
+          measurement.imageUrl, // Pass existing URL to check
         );
       }
 
       // Upload Environment Image
-      if (measurement.environmentImageUrl.isNotEmpty &&
-          !measurement.environmentImageUrl.startsWith('http')) {
+      if (measurement.environmentImageUrl.isNotEmpty) {
         measurement.environmentImageUrl = await uploadFile(
           File(measurement.environmentImageUrl),
           plantId,
           ufvId,
+          measurementType,
           '${entry.key}_env',
+          measurement.environmentImageUrl,
         );
       }
     }
