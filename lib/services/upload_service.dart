@@ -1,54 +1,26 @@
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_storage/firebase_storage.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:sigma_app/models/measurements.dart';
 import 'package:sigma_app/models/plant_model.dart';
+import 'package:sigma_app/services/supabase_service.dart'; // --- CHANGED: Import Supabase
 
 class UploadService {
-  /// Uploads a single file to Firebase Storage and returns the Download URL
+  /// Uploads a single file to Supabase Storage and returns the Download URL
   static Future<String> uploadFile(
     File imageFile,
     String plantId,
     String ufvId,
     String label,
   ) async {
-    // 1. Verifica se a foto realmente existe no celular
-    if (!imageFile.existsSync()) {
-      return "";
-    }
-
-    try {
-      String fileName = '${label}_${DateTime.now().millisecondsSinceEpoch}.jpg';
-
-      Reference ref = FirebaseStorage.instance
-          .ref()
-          .child('plants')
-          .child(plantId)
-          .child(ufvId)
-          .child(fileName);
-
-      print("Iniciando upload para: plants/$plantId/$ufvId/$fileName");
-
-      // 2. Faz o upload
-      UploadTask uploadTask = ref.putFile(imageFile);
-
-      // 3. Espera terminar
-      TaskSnapshot snapshot = await uploadTask;
-
-      print("Upload concluído! Pegando a URL...");
-      // 4. Pega o link da imagem
-      return await snapshot.ref.getDownloadURL();
-    } on FirebaseException catch (e) {
-      // 5. Captura erros ESPECÍFICOS do Firebase (como regras bloqueadas)
-      print("ERRO FIREBASE STORAGE: [${e.code}] ${e.message}");
-      return "";
-    } catch (e) {
-      print("ERRO GERAL DE UPLOAD: $e");
-      return "";
-    }
+    // --- CHANGED: Delegate to SupabaseStorageService instead of Firebase
+    return await SupabaseStorageService.uploadImage(
+      imageFile,
+      plantId,
+      ufvId,
+      label,
+    );
   }
 
   /// Iterates through a Map of measurements and uploads any local images found
@@ -84,79 +56,22 @@ class UploadService {
     }
   }
 
-  /// Faz o upload de um PDF gerado em memória (Uint8List) diretamente para o Firebase
+  /// Faz o upload de um PDF gerado em memória (Uint8List) diretamente para o Supabase
   static Future<String> uploadPdfBytes(
     Uint8List pdfBytes,
     String plantId,
     String ufvId,
+    String plantName,
+    String ufvName,
   ) async {
-    try {
-      // Validate inputs
-      if (pdfBytes.isEmpty) {
-        throw Exception('PDF bytes está vazio');
-      }
-
-      if (plantId.isEmpty || ufvId.isEmpty) {
-        throw Exception('Plant ID ou UFV ID está vazio');
-      }
-
-      print(
-        'Validação passada - PDF: ${pdfBytes.length} bytes, Plant: $plantId, UFV: $ufvId',
-      );
-
-      // Create a clean file name
-      String fileName =
-          'Relatorio_${ufvId}_${DateTime.now().millisecondsSinceEpoch}.pdf';
-
-      // Create the path: plants/plantId/ufvId/reports/filename.pdf
-      Reference ref = FirebaseStorage.instance
-          .ref()
-          .child('plants')
-          .child(plantId)
-          .child(ufvId)
-          .child('reports')
-          .child(fileName);
-
-      print("Iniciando upload do PDF para: ${ref.fullPath}");
-
-      // Upload the raw bytes and tell Firebase it is a PDF
-      UploadTask uploadTask = ref.putData(
-        pdfBytes,
-        SettableMetadata(contentType: 'application/pdf'),
-      );
-
-      // Listen to upload progress
-      uploadTask.snapshotEvents.listen((TaskSnapshot snapshot) {
-        print(
-          "Upload progress: ${(snapshot.bytesTransferred / snapshot.totalBytes) * 100}%",
-        );
-      });
-
-      TaskSnapshot snapshot = await uploadTask;
-      print("Upload do PDF concluído! Status: ${snapshot.state}");
-
-      // Return the public URL
-      String downloadUrl = await snapshot.ref.getDownloadURL();
-      print("URL de download gerada: $downloadUrl");
-
-      return downloadUrl;
-    } catch (e) {
-      print("ERRO UPLOAD PDF: $e");
-      print("Stack trace: ${StackTrace.current}");
-
-      // Provide more specific error messages
-      if (e.toString().contains('object-not-found')) {
-        print(
-          "ERRO: Referência do Firebase Storage não encontrada. Verifique se o caminho está correto.",
-        );
-      } else if (e.toString().contains('permission-denied')) {
-        print(
-          "ERRO: Sem permissão para upload. Verifique as regras do Firebase Storage.",
-        );
-      }
-
-      return "";
-    }
+    // --- CHANGED: Delegate to SupabaseStorageService instead of Firebase
+    return await SupabaseStorageService.uploadPdfBytes(
+      pdfBytes,
+      plantId,
+      ufvId,
+      plantName: plantName,
+      ufvName: ufvName,
+    );
   }
 }
 

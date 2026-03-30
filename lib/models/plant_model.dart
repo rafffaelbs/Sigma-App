@@ -1,5 +1,44 @@
 import 'measurements.dart'; // Assuming you saved the previous classes here
 
+/// Represents a PDF report entry in the history
+class PdfReport {
+  final String id;
+  final String fileName;
+  final String downloadUrl;
+  final DateTime createdAt;
+  final int fileSize;
+
+  PdfReport({
+    required this.id,
+    required this.fileName,
+    required this.downloadUrl,
+    required this.createdAt,
+    required this.fileSize,
+  });
+
+  Map<String, dynamic> toMap() {
+    return {
+      'id': id,
+      'fileName': fileName,
+      'downloadUrl': downloadUrl,
+      'createdAt': createdAt.toIso8601String(),
+      'fileSize': fileSize,
+    };
+  }
+
+  factory PdfReport.fromMap(Map<String, dynamic> map) {
+    return PdfReport(
+      id: map['id'] ?? '',
+      fileName: map['fileName'] ?? '',
+      downloadUrl: map['downloadUrl'] ?? '',
+      createdAt: DateTime.parse(
+        map['createdAt'] ?? DateTime.now().toIso8601String(),
+      ),
+      fileSize: map['fileSize'] ?? 0,
+    );
+  }
+}
+
 class Plant {
   final String id;
   final String name;
@@ -18,7 +57,7 @@ class Plant {
       'id': id,
       'name': name,
       'local': local,
-      'ufvs': { for (var ufv in ufvs) ufv.id: ufv.toMap() },
+      'ufvs': {for (var ufv in ufvs) ufv.id: ufv.toMap()},
     };
   }
 
@@ -30,7 +69,18 @@ class Plant {
       id: map['id'] ?? '',
       name: map['name'] ?? '',
       local: map['local'] ?? '',
-      ufvs: ufvsMap.values.map((x) => UFV.fromMap(x as Map<String, dynamic>)).toList(),
+      ufvs: ufvsMap.values
+          .map((x) => UFV.fromMap(x as Map<String, dynamic>))
+          .toList(),
+    );
+  }
+
+  Plant copyWith({String? id, String? name, String? local, List<UFV>? ufvs}) {
+    return Plant(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      local: local ?? this.local,
+      ufvs: ufvs ?? this.ufvs,
     );
   }
 }
@@ -55,14 +105,14 @@ class UFV {
   final int ip;
   final String dataFabricacao;
   final double volumeOleo;
-  
+
   // -----------------------------------------
-  // 2. PROJETO E AMBIENTE 
+  // 2. PROJETO E AMBIENTE
   // -----------------------------------------
   final String tempAmbiente;
   final String umidade;
   final String classeKv;
- 
+
   // -----------------------------------------
   // 3. SISTEMAS DE PROTEÇÃO
   // -----------------------------------------
@@ -70,7 +120,7 @@ class UFV {
   final String releProtecaoGeral;
   final String nobreakGeral;
   final String seccionamentoGeral;
-  
+
   final String estadoGeralProtecaoLocal;
   final String releProtecaoLocal;
   final String nobreakLocal;
@@ -114,6 +164,11 @@ class UFV {
   final String observacoes;
 
   // -----------------------------------------
+  // PDF REPORT HISTORY
+  // -----------------------------------------
+  final List<PdfReport> pdfHistory;
+
+  // -----------------------------------------
   // MEASUREMENTS (Optional)
   // -----------------------------------------
   final FullInspection? measurements;
@@ -135,21 +190,21 @@ class UFV {
     this.ip = 0,
     this.dataFabricacao = '',
     this.volumeOleo = 0.0,
-    
+
     this.tempAmbiente = '',
     this.umidade = '',
     this.classeKv = '',
-    
+
     this.estadoGeralProtecaoGeral = 'Bom',
     this.releProtecaoGeral = 'OK',
     this.nobreakGeral = 'OK',
     this.seccionamentoGeral = 'OK',
-    
+
     this.estadoGeralProtecaoLocal = 'Bom',
     this.releProtecaoLocal = 'OK',
     this.nobreakLocal = 'OK',
     this.seccionamentoLocal = 'OK',
-    
+
     this.estadoGeralInspecao = 'Bom',
     this.bobina1 = 'OK',
     this.bobina2 = 'OK',
@@ -173,14 +228,16 @@ class UFV {
     this.pressostatoOleo = 'NA',
     this.nivelOleo = 'NA',
     this.analiseOleo = 'NA',
-    
+
     this.executanteNome = '',
     this.executanteCft = '',
     this.engenheiroNome = '',
     this.engenheiroCrea = '',
     this.observacoes = '',
 
-    this.measurements, 
+    this.pdfHistory = const [],
+
+    this.measurements,
   });
 
   // Convert UFV to Map
@@ -206,12 +263,12 @@ class UFV {
       'tempAmbiente': tempAmbiente,
       'umidade': umidade,
       'classeKv': classeKv,
-      
+
       'estadoGeralProtecaoGeral': estadoGeralProtecaoGeral,
       'releProtecaoGeral': releProtecaoGeral,
       'nobreakGeral': nobreakGeral,
       'seccionamentoGeral': seccionamentoGeral,
-      
+
       'estadoGeralProtecaoLocal': estadoGeralProtecaoLocal,
       'releProtecaoLocal': releProtecaoLocal,
       'nobreakLocal': nobreakLocal,
@@ -247,7 +304,9 @@ class UFV {
       'engenheiroCrea': engenheiroCrea,
       'observacoes': observacoes,
 
-      'measurements': measurements?.toJson(), 
+      'pdfHistory': pdfHistory.map((e) => e.toMap()).toList(),
+
+      'measurements': measurements?.toJson(),
     };
   }
 
@@ -279,7 +338,7 @@ class UFV {
       releProtecaoGeral: map['releProtecaoGeral'] ?? 'OK',
       nobreakGeral: map['nobreakGeral'] ?? 'OK',
       seccionamentoGeral: map['seccionamentoGeral'] ?? 'OK',
-      
+
       estadoGeralProtecaoLocal: map['estadoGeralProtecaoLocal'] ?? 'Bom',
       releProtecaoLocal: map['releProtecaoLocal'] ?? 'OK',
       nobreakLocal: map['nobreakLocal'] ?? 'OK',
@@ -315,8 +374,14 @@ class UFV {
       engenheiroCrea: map['engenheiroCrea'] ?? '',
       observacoes: map['observacoes'] ?? '',
 
-      measurements: map['measurements'] != null 
-          ? FullInspection.fromJson(map['measurements']) 
+      pdfHistory:
+          (map['pdfHistory'] as List<dynamic>?)
+              ?.map((e) => PdfReport.fromMap(e as Map<String, dynamic>))
+              .toList() ??
+          const [],
+
+      measurements: map['measurements'] != null
+          ? FullInspection.fromJson(map['measurements'])
           : null,
     );
   }
@@ -337,16 +402,16 @@ class UFV {
     int? ip,
     String? dataFabricacao,
     double? volumeOleo,
-    
+
     String? tempAmbiente,
     String? umidade,
     String? classeKv,
-    
+
     String? estadoGeralProtecaoGeral,
     String? releProtecaoGeral,
     String? nobreakGeral,
     String? seccionamentoGeral,
-    
+
     String? estadoGeralProtecaoLocal,
     String? releProtecaoLocal,
     String? nobreakLocal,
@@ -375,12 +440,14 @@ class UFV {
     String? pressostatoOleo,
     String? nivelOleo,
     String? analiseOleo,
-    
+
     String? executanteNome,
     String? executanteCft,
     String? engenheiroNome,
     String? engenheiroCrea,
     String? observacoes,
+
+    List<PdfReport>? pdfHistory,
 
     FullInspection? measurements,
   }) {
@@ -405,13 +472,15 @@ class UFV {
       tempAmbiente: tempAmbiente ?? this.tempAmbiente,
       umidade: umidade ?? this.umidade,
       classeKv: classeKv ?? this.classeKv,
- 
-      estadoGeralProtecaoGeral: estadoGeralProtecaoGeral ?? this.estadoGeralProtecaoGeral,
+
+      estadoGeralProtecaoGeral:
+          estadoGeralProtecaoGeral ?? this.estadoGeralProtecaoGeral,
       releProtecaoGeral: releProtecaoGeral ?? this.releProtecaoGeral,
       nobreakGeral: nobreakGeral ?? this.nobreakGeral,
       seccionamentoGeral: seccionamentoGeral ?? this.seccionamentoGeral,
 
-      estadoGeralProtecaoLocal: estadoGeralProtecaoLocal ?? this.estadoGeralProtecaoLocal,
+      estadoGeralProtecaoLocal:
+          estadoGeralProtecaoLocal ?? this.estadoGeralProtecaoLocal,
       releProtecaoLocal: releProtecaoLocal ?? this.releProtecaoLocal,
       nobreakLocal: nobreakLocal ?? this.nobreakLocal,
       seccionamentoLocal: seccionamentoLocal ?? this.seccionamentoLocal,
@@ -430,7 +499,8 @@ class UFV {
       x3BuchaBt: x3BuchaBt ?? this.x3BuchaBt,
       vazamentoOleoCarcaca: vazamentoOleoCarcaca ?? this.vazamentoOleoCarcaca,
 
-      releTemperaturaDigital: releTemperaturaDigital ?? this.releTemperaturaDigital,
+      releTemperaturaDigital:
+          releTemperaturaDigital ?? this.releTemperaturaDigital,
       pt100Bobina1: pt100Bobina1 ?? this.pt100Bobina1,
       pt100Bobina2: pt100Bobina2 ?? this.pt100Bobina2,
       pt100Bobina3: pt100Bobina3 ?? this.pt100Bobina3,
@@ -445,6 +515,8 @@ class UFV {
       engenheiroNome: engenheiroNome ?? this.engenheiroNome,
       engenheiroCrea: engenheiroCrea ?? this.engenheiroCrea,
       observacoes: observacoes ?? this.observacoes,
+
+      pdfHistory: pdfHistory ?? this.pdfHistory,
 
       measurements: measurements ?? this.measurements,
     );

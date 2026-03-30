@@ -430,7 +430,7 @@ class _EditUfvState extends State<EditUfv> {
                   vertical: 8.0,
                 ),
                 child: UfvButton(
-                  ufv: "${widget.plant.name} ${widget.ufv.name}",
+                  ufv: "${widget.ufv.name}",
                   showConfigButton: false,
                 ),
               ),

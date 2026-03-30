@@ -79,8 +79,8 @@ class _SelectUfvState extends State<SelectUfv> {
                     padding: const EdgeInsetsGeometry.only(bottom: 16),
                     child: UfvButton(
                       ufv: ufv.name,
-                      onTap: () {
-                        Navigator.push(
+                      onTap: () async {
+                        final result = await Navigator.push(
                           context,
                           MaterialPageRoute(
                             builder: (context) => UfvInstrumentsScreen(
@@ -89,6 +89,11 @@ class _SelectUfvState extends State<SelectUfv> {
                             ),
                           ),
                         );
+
+                        // If data was cleared (result is true), reload the plant
+                        if (result == true) {
+                          await _loadPlantFromStorage();
+                        }
                       },
                       onConfigTap: () async {
                         final result = await Navigator.push(

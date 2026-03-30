@@ -77,10 +77,8 @@ class _MeasurementInputBlockState extends State<MeasurementInputBlock> {
 
   @override
   Widget build(BuildContext context) {
-    String currentUnit =
-        widget.allowedUnits.contains(widget.measurementValue.measurementUnit)
-        ? widget.measurementValue.measurementUnit
-        : widget.allowedUnits.first;
+    // Use the stored unit value (even if empty), don't default to first option
+    String currentUnit = widget.measurementValue.measurementUnit;
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 32.0),
@@ -157,7 +155,11 @@ class _MeasurementInputBlockState extends State<MeasurementInputBlock> {
                     ),
                     child: DropdownButtonHideUnderline(
                       child: DropdownButton<String>(
-                        value: currentUnit,
+                        value: currentUnit.isNotEmpty ? currentUnit : null,
+                        hint: const Text(
+                          'Unidade',
+                          style: TextStyle(color: Colors.grey),
+                        ),
                         icon: const Icon(
                           Icons.keyboard_arrow_down,
                           color: Colors.black,
@@ -174,7 +176,10 @@ class _MeasurementInputBlockState extends State<MeasurementInputBlock> {
                         }).toList(),
                         onChanged: (String? newValue) {
                           if (newValue != null) {
-                            widget.measurementValue.measurementUnit = newValue;
+                            setState(() {
+                              widget.measurementValue.measurementUnit =
+                                  newValue;
+                            });
                             // --- NEW: Trigger evaluation when unit changes ---
                             _runEvaluation();
                           }
@@ -186,8 +191,10 @@ class _MeasurementInputBlockState extends State<MeasurementInputBlock> {
               ),
             ),
 
-            // --- NEW: Display the evaluation badge right below the input ---
-            if (widget.measurementValue.evaluation != 'none')
+            // --- NEW: Display the evaluation badge only when value AND unit are filled ---
+            if (widget.measurementValue.evaluation != 'none' &&
+                widget.measurementValue.value > 0.0 &&
+                widget.measurementValue.measurementUnit.isNotEmpty)
               SizedBox(
                 width: double.infinity,
                 child: Padding(

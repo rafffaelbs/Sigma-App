@@ -14,6 +14,7 @@ import 'package:sigma_app/services/pdf_service.dart';
 import 'package:sigma_app/services/supabase_service.dart';
 import 'package:sigma_app/widgets/custom_header.dart';
 import 'package:sigma_app/widgets/plant_button.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class UfvInstrumentsScreen extends StatelessWidget {
   final UFV ufv;
@@ -74,6 +75,8 @@ class UfvInstrumentsScreen extends StatelessWidget {
         pdfBytes,
         plant.id,
         ufv.id,
+        plantName: plant.name,
+        ufvName: ufv.name,
       );
 
       if (pdfDownloadUrl.isNotEmpty) {
@@ -81,7 +84,7 @@ class UfvInstrumentsScreen extends StatelessWidget {
         await FirebaseFirestore.instance
             .collection('plants')
             .doc(plant.id)
-            .update({'ufvs.${ufv.id}.reportUrl': pdfDownloadUrl});
+            .update({FieldPath(['ufvs', ufv.id, 'reportUrl']): pdfDownloadUrl});
 
         // --- FIX: Use context.mounted ---
         if (context.mounted) {
@@ -281,10 +284,35 @@ class UfvInstrumentsScreen extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: Colors.white,
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.black87),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: const Text(
+          'Instrumentos',
+          style: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold),
+        ),
+        actions: [
+          // PDF History Button
+          IconButton(
+            icon: const Icon(Icons.history, color: Colors.black87),
+            onPressed: () => _showPdfHistory(context),
+            tooltip: 'Histórico de PDFs',
+          ),
+          // Clear Data Button
+          IconButton(
+            icon: const Icon(Icons.delete_sweep, color: Colors.red),
+            onPressed: () => _showClearDataConfirmation(context),
+            tooltip: 'Limpar todos os dados',
+          ),
+        ],
+      ),
       body: SafeArea(
         child: Column(
           children: [
-            const CustomHeader(title: 'Instrumentos'),
             const SizedBox(height: 20),
             Container(
               margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 5),
@@ -336,6 +364,311 @@ class UfvInstrumentsScreen extends StatelessWidget {
             )
           : null,
     );
+  }
+
+  // ==========================================
+  // CLEAR DATA FUNCTIONALITY
+  // ==========================================
+  Future<void> _showClearDataConfirmation(BuildContext context) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Row(
+          children: [
+            Icon(Icons.warning_amber_rounded, color: Colors.red, size: 28),
+            SizedBox(width: 10),
+            Text('Atenção!'),
+          ],
+        ),
+        content: const Text(
+          'Tem certeza que deseja apagar TODAS as medições e imagens desta UFV?\n\n'
+          'Esta ação não pode ser desfeita!',
+          style: TextStyle(fontSize: 16),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('CANCELAR'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('APAGAR TUDO'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      await _clearAllData(context);
+    }
+  }
+
+  Future<void> _clearAllData(BuildContext context) async {
+    try {
+      // Helper to clear a single MeasurementValue
+      void clearMeasurementValue(MeasurementValue mv) {
+        mv.value = 0.0;
+        mv.imageUrl = '';
+        mv.environmentImageUrl = '';
+        mv.timestamp = '';
+        mv.evaluation = '';
+        mv.equipment = '';
+        mv.latitude = null;
+        mv.longitude = null;
+      }
+
+      // Helper to clear all values in a PhaseGroup (keep structure)
+      void clearPhaseGroup(PhaseGroup pg) {
+        clearMeasurementValue(pg.faseA);
+        clearMeasurementValue(pg.faseB);
+        clearMeasurementValue(pg.faseC);
+        if (pg.faseReserva != null) clearMeasurementValue(pg.faseReserva!);
+        if (pg.auxiliar != null) clearMeasurementValue(pg.auxiliar!);
+      }
+
+      // Helper to clear all values in a DynamicGroup (keep structure)
+      void clearDynamicGroup(DynamicGroup dg) {
+        for (var reading in dg.readings.values) {
+          clearMeasurementValue(reading);
+        }
+      }
+
+      // Clear all measurements in Megohmetro
+      final meg = ufv.measurements!.megohmetro;
+      if (meg.transformador != null) clearDynamicGroup(meg.transformador!);
+      meg.terminacaoMufla.values.forEach(clearPhaseGroup);
+      meg.paraRaios.values.forEach(clearPhaseGroup);
+      meg.seccionadora.values.forEach(clearPhaseGroup);
+      meg.disjuntorReligador.values.forEach(clearPhaseGroup);
+      if (meg.transformadorCorrente != null)
+        clearPhaseGroup(meg.transformadorCorrente!);
+
+      // Clear all measurements in Microohmimetro
+      final micro = ufv.measurements!.microohmimetro;
+      micro.transformador.values.forEach(clearDynamicGroup);
+      micro.continuidadeMalha.values.forEach(clearDynamicGroup);
+      micro.seccionadora.values.forEach(clearPhaseGroup);
+      micro.disjuntorReligador.values.forEach(clearPhaseGroup);
+
+      // Clear all measurements in TTR
+      final ttr = ufv.measurements!.ttr;
+      ttr.transformador.values.forEach(clearDynamicGroup);
+      if (ttr.transformadorPotencial != null)
+        clearPhaseGroup(ttr.transformadorPotencial!);
+      if (ttr.transformadorCorrente != null)
+        clearPhaseGroup(ttr.transformadorCorrente!);
+
+      // Clear all measurements in Hipot
+      final hipot = ufv.measurements!.hipot;
+      hipot.caboMediaTensao.values.forEach(clearPhaseGroup);
+
+      // Clear all measurements in Terrometro
+      final ter = ufv.measurements!.terrometro;
+      if (ter.subestacao != null) clearDynamicGroup(ter.subestacao!);
+      ter.transformadores.values.forEach(clearDynamicGroup);
+
+      // Clear all measurements in Toque-Passo
+      final toq = ufv.measurements!.toquePasso;
+      toq.subestacao.values.forEach(clearDynamicGroup);
+      toq.cercamento.values.forEach(clearDynamicGroup);
+      toq.skid.values.forEach(clearDynamicGroup);
+
+      // Clear identification image
+      ufv.measurements!.identificacaoUrl = '';
+
+      // Save to local storage (structure preserved, only values cleared)
+      await LocalSyncService.savePlantLocally(plant);
+
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Todos os dados foram apagados com sucesso!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+        // Return true to indicate data was cleared, parent should reload
+        Navigator.pop(context, true);
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erro ao apagar dados: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  // ==========================================
+  // PDF HISTORY FUNCTIONALITY
+  // ==========================================
+  void _showPdfHistory(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => FutureBuilder<List<Map<String, dynamic>>>(
+        future: SupabaseStorageService.listPdfs(plant.id, ufv.id),
+        builder: (context, snapshot) {
+          return DraggableScrollableSheet(
+            initialChildSize: 0.6,
+            minChildSize: 0.3,
+            maxChildSize: 0.9,
+            expand: false,
+            builder: (context, scrollController) {
+              return Container(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Header
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Histórico de PDFs',
+                              style: Theme.of(context).textTheme.headlineSmall
+                                  ?.copyWith(fontWeight: FontWeight.bold),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              ufv.name,
+                              style: const TextStyle(
+                                color: Colors.grey,
+                                fontSize: 14,
+                              ),
+                            ),
+                          ],
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.close),
+                          onPressed: () => Navigator.pop(context),
+                        ),
+                      ],
+                    ),
+                    const Divider(height: 20),
+                    // PDF List
+                    Expanded(
+                      child: _buildPdfListContent(
+                        context,
+                        snapshot,
+                        scrollController,
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildPdfListContent(
+    BuildContext context,
+    AsyncSnapshot<List<Map<String, dynamic>>> snapshot,
+    ScrollController scrollController,
+  ) {
+    if (snapshot.connectionState == ConnectionState.waiting) {
+      return const Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            CircularProgressIndicator(),
+            SizedBox(height: 16),
+            Text('Carregando PDFs...'),
+          ],
+        ),
+      );
+    }
+
+    if (snapshot.hasError) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.error_outline, size: 64, color: Colors.red),
+            const SizedBox(height: 16),
+            Text('Erro ao carregar: ${snapshot.error}'),
+          ],
+        ),
+      );
+    }
+
+    final pdfs = snapshot.data ?? [];
+
+    if (pdfs.isEmpty) {
+      return const Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.folder_open, size: 64, color: Colors.grey),
+            SizedBox(height: 16),
+            Text(
+              'Nenhum PDF encontrado',
+              style: TextStyle(color: Colors.grey, fontSize: 16),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return ListView.builder(
+      controller: scrollController,
+      itemCount: pdfs.length,
+      itemBuilder: (context, index) {
+        final pdf = pdfs[index];
+        final createdAt = pdf['createdAt'] as DateTime;
+        return Card(
+          margin: const EdgeInsets.only(bottom: 12),
+          child: ListTile(
+            leading: const CircleAvatar(
+              backgroundColor: Colors.red,
+              child: Icon(Icons.picture_as_pdf, color: Colors.white),
+            ),
+            title: Text(pdf['fileName']),
+            subtitle: Text(
+              '${createdAt.day}/${createdAt.month}/${createdAt.year} '
+              '• ${_formatFileSize(pdf['fileSize'] as int)}',
+            ),
+            trailing: IconButton(
+              icon: const Icon(Icons.open_in_new),
+              onPressed: () {
+                _openPdfUrl(pdf['downloadUrl'] as String);
+              },
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  String _formatFileSize(int bytes) {
+    if (bytes < 1024) return '$bytes B';
+    if (bytes < 1024 * 1024) return '${(bytes / 1024).toStringAsFixed(1)} KB';
+    return '${(bytes / (1024 * 1024)).toStringAsFixed(1)} MB';
+  }
+
+  Future<void> _openPdfUrl(String url) async {
+    final uri = Uri.parse(url);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } else {
+      print('Could not launch $url');
+    }
   }
 
   // ==========================================
