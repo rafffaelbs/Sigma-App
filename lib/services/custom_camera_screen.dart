@@ -9,8 +9,13 @@ import 'package:permission_handler/permission_handler.dart';
 
 class CustomCameraScreen extends StatefulWidget {
   final List<String> allowedUnits;
+  final String measurementCode;
 
-  const CustomCameraScreen({super.key, required this.allowedUnits});
+  const CustomCameraScreen({
+    super.key,
+    required this.allowedUnits,
+    this.measurementCode = '',
+  });
 
   @override
   State<CustomCameraScreen> createState() => _CustomCameraScreenState();
@@ -269,27 +274,34 @@ class _CustomCameraScreenState extends State<CustomCameraScreen> {
 
         // 3. APPLY WATERMARK
         String ts = DateTime.now().toString().substring(0, 16);
-        String lat = position?.latitude.toString() ?? "N/A";
-        String lon = position?.longitude.toString() ?? "N/A";
+        String lat = position?.latitude.toStringAsFixed(6) ?? "N/A";
+        String lon = position?.longitude.toStringAsFixed(6) ?? "N/A";
 
-        List<String> lines = ["Lat: $lat", "Long: $lon", "Date: $ts"];
+        // Build lines — include code only when it is available
+        List<String> lines = [
+          if (widget.measurementCode.isNotEmpty) 'Data: $ts',
+          'Long: $lon',
+          'Lat: $lat',
+          (widget.measurementCode),
+        ];
 
         // Define text position and box padding
         int textX = 35;
-        int textY = croppedImg.height - 110;
-        int padding = 15;
-        int fontSize = 24; // Approximate height of arial24
+        int lineCount = lines.length;
+        int fontSize = 24;
         int lineSpacing = 1;
+        int padding = 15;
+        int boxHeight = lineCount * (fontSize + lineSpacing) + padding * 2;
+        int textY = croppedImg.height - padding - boxHeight + padding;
 
         // Draw the semi-transparent black rectangle (80% opacity)
-        // Note: In the image library, alpha 204 is roughly 80% (255 * 0.8)
         img.fillRect(
           croppedImg,
           x1: textX - padding,
-          y1: textY - padding,
-          x2: textX + 300, // Adjust width based on your longest string
-          y2: textY + 90, // Adjust height based on number of lines
-          color: img.ColorRgba8(0, 0, 0, 204), // Black with ~80% opacity
+          y1: croppedImg.height - padding - boxHeight,
+          x2: textX + 400,
+          y2: croppedImg.height - padding - 5,
+          color: img.ColorRgba8(0, 0, 0, 204),
         );
 
         // Draw the text on top of the box
@@ -302,7 +314,6 @@ class _CustomCameraScreenState extends State<CustomCameraScreen> {
             y: textY,
             color: img.ColorRgb8(255, 255, 255),
           );
-          // Increment Y for the next line
           textY += fontSize + lineSpacing;
         }
 
@@ -348,18 +359,18 @@ class _CustomCameraScreenState extends State<CustomCameraScreen> {
           Positioned(
             bottom: 250,
             left: 20,
-
             child: Container(
-              // Update the Container in the REAL-TIME OVERLAY section of your build method
-              padding: const EdgeInsets.all(12),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
               decoration: BoxDecoration(
-                color: Colors.black.withOpacity(0.8), // Matches the final file
+                color: Colors.black.withOpacity(0.8),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Text(
-                'Lat: ${_currentPosition?.latitude ?? "Buscando satélites..."}\n'
-                'Lon: ${_currentPosition?.longitude ?? "..."}\n'
-                'Data: ${DateTime.now().toString().substring(0, 16)}',
+                'Data: ${DateTime.now().toString().substring(0, 16)}\n'
+                'Lat: ${_currentPosition?.latitude.toStringAsFixed(6) ?? "Buscando..."}\n'
+                'Lon: ${_currentPosition?.longitude.toStringAsFixed(6) ?? "..."}'
+                '${widget.measurementCode.isNotEmpty ? "\n${widget.measurementCode}" : ""}',
+
                 style: const TextStyle(
                   color: Colors.white,
                   fontSize: 13,

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:sigma_app/models/measurements.dart';
 import 'package:sigma_app/models/plant_model.dart';
+import 'package:sigma_app/services/measurement_codes.dart';
 import 'package:sigma_app/widgets/custom_header.dart';
 import 'package:sigma_app/widgets/equipments_dropdown.dart';
 import 'package:sigma_app/widgets/measurement_input_block.dart';
@@ -13,6 +14,10 @@ class DynamicGroupEntryScreen extends StatefulWidget {
   final String plantId;
   final String ufvId;
   final UFV ufv;
+  /// Subgroup path used for code lookup (e.g. "Transformador", "Continuidade Malha")
+  final String subgroup;
+  /// Equipment key (outer map key) for code lookup; empty for single-group slots
+  final String equipmentKey;
 
   const DynamicGroupEntryScreen({
     super.key,
@@ -23,6 +28,8 @@ class DynamicGroupEntryScreen extends StatefulWidget {
     required this.plantId,
     required this.ufvId,
     required this.ufv,
+    this.subgroup = '',
+    this.equipmentKey = '',
   });
 
   @override
@@ -111,8 +118,14 @@ class _DynamicGroupEntryScreenState extends State<DynamicGroupEntryScreen> {
                       measurementValue: widget.dynamicGroup.readings[entry.key]!,
                       controller: entry.value,
                       allowedUnits: widget.allowedUnits,
-                      instrumentType: widget.instrumentType, 
-                      ufv: widget.ufv, 
+                      instrumentType: widget.instrumentType,
+                      ufv: widget.ufv,
+                      measurementCode: MeasurementCodes.forDynamic(
+                        widget.instrumentType,
+                        widget.subgroup,
+                        widget.equipmentKey,
+                        entry.key,
+                      ),
                     ),
                   ),
                   EquipmentDropdown(

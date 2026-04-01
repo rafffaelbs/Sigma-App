@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:sigma_app/models/measurements.dart';
 import 'package:sigma_app/models/plant_model.dart';
+import 'package:sigma_app/services/measurement_codes.dart';
 import 'package:sigma_app/widgets/custom_header.dart';
 import 'package:sigma_app/widgets/equipments_dropdown.dart';
 import 'package:sigma_app/widgets/measurement_input_block.dart';
@@ -13,6 +14,10 @@ class PhaseGroupEntryScreen extends StatefulWidget {
   final String plantId;
   final String ufvId;
   final UFV ufv;
+  /// Subgroup path used for code lookup (e.g. "Terminação Mufla")
+  final String subgroup;
+  /// Equipment key used for code lookup (e.g. "Poste"); empty for single-group slots
+  final String equipmentKey;
 
   const PhaseGroupEntryScreen({
     super.key,
@@ -23,6 +28,8 @@ class PhaseGroupEntryScreen extends StatefulWidget {
     required this.plantId,
     required this.ufvId,
     required this.ufv,
+    this.subgroup = '',
+    this.equipmentKey = '',
   });
 
   @override
@@ -126,6 +133,12 @@ class _PhaseGroupEntryScreenState extends State<PhaseGroupEntryScreen> {
                       allowedUnits: widget.allowedUnits,
                       instrumentType: widget.instrumentType,
                       ufv: widget.ufv,
+                      measurementCode: MeasurementCodes.forPhase(
+                        widget.instrumentType,
+                        widget.subgroup,
+                        widget.equipmentKey,
+                        'Fase A',
+                      ),
                     ),
                     MeasurementInputBlock(
                       label: 'Fase B',
@@ -134,6 +147,12 @@ class _PhaseGroupEntryScreenState extends State<PhaseGroupEntryScreen> {
                       allowedUnits: widget.allowedUnits,
                       instrumentType: widget.instrumentType,
                       ufv: widget.ufv,
+                      measurementCode: MeasurementCodes.forPhase(
+                        widget.instrumentType,
+                        widget.subgroup,
+                        widget.equipmentKey,
+                        'Fase B',
+                      ),
                     ),
                     MeasurementInputBlock(
                       label: 'Fase C',
@@ -142,6 +161,12 @@ class _PhaseGroupEntryScreenState extends State<PhaseGroupEntryScreen> {
                       allowedUnits: widget.allowedUnits,
                       instrumentType: widget.instrumentType,
                       ufv: widget.ufv,
+                      measurementCode: MeasurementCodes.forPhase(
+                        widget.instrumentType,
+                        widget.subgroup,
+                        widget.equipmentKey,
+                        'Fase C',
+                      ),
                     ),
                     EquipmentDropdown(
                       measurementType: widget.instrumentType,

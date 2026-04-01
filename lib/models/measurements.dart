@@ -13,6 +13,7 @@ class MeasurementValue {
   double? latitude;
   double? longitude;
   String evaluation;
+  String code;
 
   bool get isFilled {
     bool hasValue = value > 0.0;
@@ -30,6 +31,7 @@ class MeasurementValue {
     this.latitude,
     this.longitude,
     this.evaluation = "",
+    this.code = "",
   });
 
   factory MeasurementValue.fromJson(Map<String, dynamic> json) {
@@ -43,6 +45,7 @@ class MeasurementValue {
       latitude: json['latitude']?.toDouble(),
       longitude: json['longitude']?.toDouble(),
       evaluation: json['evaluation'] ?? "",
+      code: json['code'] ?? "",
     );
   }
 
@@ -57,6 +60,7 @@ class MeasurementValue {
       'latitude': latitude,
       'longitude': longitude,
       'evaluation': evaluation,
+      'code': code,
     };
   }
 }

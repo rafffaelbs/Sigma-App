@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:gal/gal.dart';
 import 'package:sigma_app/models/plant_model.dart';
 import 'package:sigma_app/services/custom_camera_screen.dart';
 import 'package:sigma_app/services/local_sync_service.dart';
@@ -16,7 +17,8 @@ class IdentificacaoEntryScreen extends StatefulWidget {
   });
 
   @override
-  State<IdentificacaoEntryScreen> createState() => _IdentificacaoEntryScreenState();
+  State<IdentificacaoEntryScreen> createState() =>
+      _IdentificacaoEntryScreenState();
 }
 
 class _IdentificacaoEntryScreenState extends State<IdentificacaoEntryScreen> {
@@ -36,7 +38,10 @@ class _IdentificacaoEntryScreenState extends State<IdentificacaoEntryScreen> {
     final File? imageFile = await Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => const CustomCameraScreen(allowedUnits: []), 
+        builder: (context) => const CustomCameraScreen(
+          allowedUnits: [],
+          measurementCode: '0.0.0',
+        ),
       ),
     );
 
@@ -45,6 +50,8 @@ class _IdentificacaoEntryScreenState extends State<IdentificacaoEntryScreen> {
       setState(() {
         _imageUrl = imageFile.path;
       });
+      // Save it locally to device gallery to match other pictures behavior
+      await Gal.putImage(imageFile.path);
     }
   }
 
@@ -53,7 +60,7 @@ class _IdentificacaoEntryScreenState extends State<IdentificacaoEntryScreen> {
       widget.ufv.measurements!.identificacaoUrl = _imageUrl;
       await LocalSyncService.savePlantLocally(widget.plant);
     }
-    
+
     if (mounted) {
       Navigator.pop(context, true); // Return true to indicate it was saved
     }
@@ -67,7 +74,7 @@ class _IdentificacaoEntryScreenState extends State<IdentificacaoEntryScreen> {
         child: Column(
           children: [
             const CustomHeader(title: 'Identificação'),
-            
+
             Expanded(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.all(16.0),
@@ -99,12 +106,41 @@ class _IdentificacaoEntryScreenState extends State<IdentificacaoEntryScreen> {
                       if (_imageUrl.isNotEmpty) ...[
                         ClipRRect(
                           borderRadius: BorderRadius.circular(8),
-                          child: Image.file(
-                            File(_imageUrl),
-                            height: 200,
-                            width: double.infinity,
-                            fit: BoxFit.cover,
-                          ),
+                          child: _imageUrl.startsWith('http')
+                              ? Image.network(
+                                  _imageUrl,
+                                  height: 200,
+                                  width: double.infinity,
+                                  fit: BoxFit.cover,
+                                  loadingBuilder:
+                                      (context, child, loadingProgress) {
+                                        if (loadingProgress == null) {
+                                          return child;
+                                        }
+                                        return const SizedBox(
+                                          height: 200,
+                                          child: Center(
+                                            child: CircularProgressIndicator(),
+                                          ),
+                                        );
+                                      },
+                                  errorBuilder: (context, error, stackTrace) =>
+                                      const SizedBox(
+                                        height: 200,
+                                        child: Center(
+                                          child: Icon(
+                                            Icons.broken_image,
+                                            size: 50,
+                                          ),
+                                        ),
+                                      ),
+                                )
+                              : Image.file(
+                                  File(_imageUrl),
+                                  height: 200,
+                                  width: double.infinity,
+                                  fit: BoxFit.cover,
+                                ),
                         ),
                         const SizedBox(height: 16),
                       ],
@@ -121,8 +157,8 @@ class _IdentificacaoEntryScreenState extends State<IdentificacaoEntryScreen> {
                         ),
                         icon: const Icon(Icons.camera_alt_outlined),
                         label: Text(
-                          _imageUrl.isEmpty 
-                              ? 'Adicionar Imagem Identificação' 
+                          _imageUrl.isEmpty
+                              ? 'Adicionar Imagem Identificação'
                               : 'Trocar Imagem Identificação',
                           style: const TextStyle(fontSize: 16),
                         ),
@@ -144,7 +180,7 @@ class _IdentificacaoEntryScreenState extends State<IdentificacaoEntryScreen> {
                     color: Colors.black.withOpacity(0.05),
                     blurRadius: 10,
                     offset: const Offset(0, -5),
-                  )
+                  ),
                 ],
               ),
               child: SizedBox(

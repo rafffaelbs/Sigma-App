@@ -35,7 +35,7 @@ class SupabaseStorageService {
           .replaceAll(RegExp(r'[^a-zA-Z0-9_]'), '');
 
       // 2. Nome simples sem timestamp (ex: FaseA.jpg) - permite sobrescrita
-      String fileName = '${label}.jpg';
+      String fileName = '$label.jpg';
       // 3. Organizado em pastas por tipo de medição
       String filePath = '$safePlantId/$safeUfvId/$measurementType/$fileName';
 
@@ -115,9 +115,9 @@ class SupabaseStorageService {
         String cleanUfv = ufvName
             .replaceAll('.', '_')
             .replaceAll(RegExp(r'[^a-zA-Z0-9_]'), '');
-        baseName = '${cleanUfv}_${monthAbbr}${year}_$uniqueSuffix';
+        baseName = '${cleanUfv}_$monthAbbr${year}_$uniqueSuffix';
       } else {
-        baseName = '${safeUfvId}_${monthAbbr}${year}_$uniqueSuffix';
+        baseName = '${safeUfvId}_$monthAbbr${year}_$uniqueSuffix';
       }
 
       String filePath = '$safePlantId/$safeUfvId/$baseName.pdf';

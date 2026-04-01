@@ -13,9 +13,9 @@ class MeasurementInputBlock extends StatefulWidget {
   final MeasurementValue measurementValue;
   final TextEditingController controller;
   final List<String> allowedUnits;
-  final String
-  instrumentType; // --- NEW: Pass the instrument name (e.g., 'Megohmetro') ---
-  final UFV ufv; // --- NEW: Pass the UFV for future formula calculations ---
+  final String instrumentType;
+  final UFV ufv;
+  final String measurementCode; // e.g. "1.1.1A"
 
   const MeasurementInputBlock({
     super.key,
@@ -25,6 +25,7 @@ class MeasurementInputBlock extends StatefulWidget {
     required this.allowedUnits,
     required this.instrumentType,
     required this.ufv,
+    this.measurementCode = '',
   });
 
   @override
@@ -33,11 +34,26 @@ class MeasurementInputBlock extends StatefulWidget {
 
 class _MeasurementInputBlockState extends State<MeasurementInputBlock> {
   Future<void> _takePhoto(bool isEnvironment) async {
+    // Resolve the effective code:
+    // 1. Prefer the code already stored on the measurementValue (loaded from Firestore / seeded).
+    // 2. Fall back to the statically-computed lookup code.
+    // 3. If the lookup gives us something new, persist it on the measurementValue.
+    final effectiveCode = widget.measurementValue.code.isNotEmpty
+        ? widget.measurementValue.code
+        : widget.measurementCode;
+
+    if (widget.measurementCode.isNotEmpty &&
+        widget.measurementValue.code.isEmpty) {
+      widget.measurementValue.code = widget.measurementCode;
+    }
+
     final File? result = await Navigator.push<File>(
       context,
       MaterialPageRoute(
-        builder: (context) =>
-            CustomCameraScreen(allowedUnits: widget.allowedUnits),
+        builder: (context) => CustomCameraScreen(
+          allowedUnits: widget.allowedUnits,
+          measurementCode: effectiveCode,
+        ),
       ),
     );
 

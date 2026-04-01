@@ -1,12 +1,14 @@
 # Sigma App — UFV Inspection & Commissioning Reports
 
 > **Professional PDF report generation for medium-voltage solar farm commissioning.**  
-> Built by [Sigma PowerSys](https://sigma-powersys.com.br) · Flutter · Firebase
+> Built by [Sigma PowerSys](https://sigma-powersys.com.br) · Flutter · Firebase · Supabase
 
 
 ## Overview
 
 Sigma App is a Flutter mobile application that streamlines the commissioning workflow for solar farms (UFV — *Usina Fotovoltaica*). Field engineers use it to capture measurement readings, attach photos, and instantly generate branded, publication-ready PDF inspection reports — entirely from a mobile device.
+
+Data is synced to the cloud via Firebase Firestore and photos/PDFs are stored in Supabase Storage, with full offline support for fieldwork in areas with no connectivity.
 
 ---
 
@@ -28,12 +30,16 @@ Produces multi-section, branded reports covering all commissioning phases, inclu
 
 ### ☁️ Cloud & Offline Support
 - Firebase Firestore for real-time data sync
-- Firebase Storage for photo uploads
+- Supabase Storage for photo and PDF uploads
 - Local persistence via `shared_preferences` for full offline capability
+- Automatic sync when connectivity is restored (`local_sync_service`)
 
 ### 📷 Photo & Location Documentation
 - In-app camera capture and gallery picker
 - GPS tagging for each inspection site
+
+### 🔐 Authentication
+- Firebase Authentication for secure, role-based access
 
 ---
 
@@ -42,7 +48,8 @@ Produces multi-section, branded reports covering all commissioning phases, inclu
 | Layer | Technology |
 |---|---|
 | Framework | Flutter 3.10.3+ / Dart |
-| Backend | Firebase (Firestore, Storage) |
+| Auth & Database | Firebase Auth, Cloud Firestore |
+| File Storage | Supabase Storage (images & PDFs) |
 | PDF Engine | `pdf ^3.11.3`, `printing ^5.14.2` |
 | Image Handling | `image_picker`, `gal`, `camera` |
 | Geolocation | `geolocator ^14.0.2` |
@@ -54,14 +61,26 @@ Produces multi-section, branded reports covering all commissioning phases, inclu
 
 ```
 lib/
-├── main.dart                 # App entry point
-├── screens/                  # UI screens
+├── main.dart                      # App entry point
+├── firebase_options.dart          # Firebase platform configuration
+├── screens/                       # UI screens
+│   ├── home_screen.dart
+│   ├── login_screen.dart
+│   ├── select_plant.dart
+│   ├── select_ufv.dart
+│   ├── edit_ufv.dart
+│   └── ufv_instrument_screen.dart
 ├── services/
-│   └── pdf_service.dart      # PDF report generation
+│   ├── pdf_service.dart           # PDF report generation
+│   ├── supabase_service.dart      # Image & PDF cloud storage
+│   ├── upload_service.dart        # Upload orchestration
+│   ├── local_sync_service.dart    # Offline sync logic
+│   ├── plant_service.dart         # Plant CRUD operations
+│   └── evaluation_service.dart    # Measurement evaluation logic
 ├── models/
-│   ├── plant_model.dart      # UFV / plant data models
-│   └── measurements.dart     # Measurement data models
-└── widgets/                  # Reusable UI components
+│   ├── plant_model.dart           # UFV / plant data models
+│   └── measurements.dart          # Measurement data models
+└── widgets/                       # Reusable UI components
 ```
 
 ---
@@ -71,8 +90,9 @@ lib/
 ### Prerequisites
 
 - Flutter SDK **3.10.3** or higher ([install guide](https://docs.flutter.dev/get-started/install))
-- A configured Firebase project
-- A `.env` file with your Firebase credentials (see [Configuration](#configuration))
+- A configured Firebase project ([Firebase Console](https://console.firebase.google.com))
+- A configured Supabase project ([Supabase Dashboard](https://supabase.com/dashboard))
+- A `.env` file with your credentials (see [Configuration](#configuration) below)
 
 ### Installation
 
@@ -87,7 +107,7 @@ lib/
    flutter pub get
    ```
 
-3. **Configure Firebase** — see [Configuration](#configuration) below
+3. **Configure credentials** — see [Configuration](#configuration) below
 
 4. **Run the app**
    ```bash
@@ -98,14 +118,35 @@ lib/
 
 ## Configuration
 
-Create a `.env` file in the project root with your Firebase credentials:
+Create a `.env` file in the project root with the following keys:
 
 ```env
-FIREBASE_API_KEY=your_api_key
-FIREBASE_APP_ID=your_app_id
-FIREBASE_PROJECT_ID=your_project_id
-FIREBASE_STORAGE_BUCKET=your_storage_bucket
+# Firebase — Android API key (from google-services.json)
+ANDROID_API_KEY=your_android_api_key
+
+# Firebase — iOS API key (from GoogleService-Info.plist)
+IOS_API_KEY=your_ios_api_key
+
+# Supabase project URL
+SUPABASE_URL=https://your-project-id.supabase.co
+
+# Supabase anon/public key
+SUPABASE_ANON_KEY=your_supabase_anon_key
 ```
+
+> **Note:** The `.env` file is listed in `.gitignore` and must **never** be committed to version control.
+
+### Firebase Setup
+
+1. Create a Firebase project and register your Android & iOS apps
+2. Enable **Cloud Firestore** and **Firebase Authentication**
+3. Download `google-services.json` (Android) and `GoogleService-Info.plist` (iOS) — these are also gitignored and must be added locally
+
+### Supabase Setup
+
+1. Create a Supabase project and note your project URL and anon key
+2. Create two storage buckets: `images` and `reports`
+3. Configure Row Level Security (RLS) policies to restrict access appropriately
 
 ---
 
@@ -116,3 +157,17 @@ FIREBASE_STORAGE_BUCKET=your_storage_bucket
 3. Record measurements for each instrument
 4. Attach photos from camera or gallery
 5. Tap **Generate Report** — the app renders a PDF and triggers the native share/save dialog
+6. The PDF is automatically uploaded to Supabase Storage for cloud archiving
+
+---
+
+## License
+
+This project is proprietary software developed by [Sigma PowerSys](https://sigma-powersys.com.br). All rights reserved.
+
+---
+
+## Contact
+
+**Sigma PowerSys**  
+🌐 [sigma-powersys.com.br](https://sigma-powersys.com.br)

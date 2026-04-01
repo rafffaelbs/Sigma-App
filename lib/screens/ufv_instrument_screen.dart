@@ -444,8 +444,9 @@ class UfvInstrumentsScreen extends StatelessWidget {
       meg.paraRaios.values.forEach(clearPhaseGroup);
       meg.seccionadora.values.forEach(clearPhaseGroup);
       meg.disjuntorReligador.values.forEach(clearPhaseGroup);
-      if (meg.transformadorCorrente != null)
+      if (meg.transformadorCorrente != null) {
         clearPhaseGroup(meg.transformadorCorrente!);
+      }
 
       // Clear all measurements in Microohmimetro
       final micro = ufv.measurements!.microohmimetro;
@@ -457,10 +458,12 @@ class UfvInstrumentsScreen extends StatelessWidget {
       // Clear all measurements in TTR
       final ttr = ufv.measurements!.ttr;
       ttr.transformador.values.forEach(clearDynamicGroup);
-      if (ttr.transformadorPotencial != null)
+      if (ttr.transformadorPotencial != null) {
         clearPhaseGroup(ttr.transformadorPotencial!);
-      if (ttr.transformadorCorrente != null)
+      }
+      if (ttr.transformadorCorrente != null) {
         clearPhaseGroup(ttr.transformadorCorrente!);
+      }
 
       // Clear all measurements in Hipot
       final hipot = ufv.measurements!.hipot;
@@ -818,7 +821,8 @@ class UfvInstrumentsScreen extends StatelessWidget {
               );
             }
 
-            void addSinglePhaseGroup(String title, PhaseGroup group) {
+            // Single PhaseGroup helper for Megohmetro TC
+            void addSinglePhaseGroup(String title, PhaseGroup group, String subgroup) {
               final prog = group.getProgress();
               folders.add(
                 FolderOption(
@@ -837,6 +841,8 @@ class UfvInstrumentsScreen extends StatelessWidget {
                           ufvId: ufv.id,
                           instrumentType: 'Megohmetro',
                           ufv: ufv,
+                          subgroup: subgroup,
+                          equipmentKey: '',
                         ),
                       ),
                     );
@@ -853,6 +859,7 @@ class UfvInstrumentsScreen extends StatelessWidget {
               addSinglePhaseGroup(
                 'Transformador de Corrente',
                 meg.transformadorCorrente!,
+                'Transformador de Corrente',
               );
             }
 
@@ -1017,6 +1024,7 @@ class UfvInstrumentsScreen extends StatelessWidget {
               );
             }
 
+            // Single PhaseGroup helper for TTR TP / TC
             void addSinglePhaseGroup(String title, PhaseGroup group) {
               final prog = group.getProgress();
               folders.add(
@@ -1036,6 +1044,8 @@ class UfvInstrumentsScreen extends StatelessWidget {
                           plantId: plant.id,
                           ufvId: ufv.id,
                           ufv: ufv,
+                          subgroup: title,
+                          equipmentKey: '',
                         ),
                       ),
                     );
@@ -1145,6 +1155,8 @@ class UfvInstrumentsScreen extends StatelessWidget {
                           plantId: plant.id,
                           ufvId: ufv.id,
                           ufv: ufv,
+                          subgroup: 'Subestação - Resitencia Aterramento',
+                          equipmentKey: '',
                         ),
                       ),
                     );
@@ -1253,6 +1265,7 @@ class UfvInstrumentsScreen extends StatelessWidget {
     List<String> allowedUnits,
     String instrumentType,
   ) async {
+    // title is the subgroup (e.g. "Terminação Mufla"); entry.key is the equipment key
     await Navigator.push(
       context,
       MaterialPageRoute(
@@ -1276,6 +1289,8 @@ class UfvInstrumentsScreen extends StatelessWidget {
                         plantId: plant.id,
                         ufvId: ufv.id,
                         ufv: ufv,
+                        subgroup: title,
+                        equipmentKey: entry.key,
                       ),
                     ),
                   );
@@ -1309,6 +1324,7 @@ class UfvInstrumentsScreen extends StatelessWidget {
     List<String> allowedUnits,
     String instrumentType,
   ) async {
+    // title is the subgroup (e.g. "Transformador"); entry.key is the equipment key
     await Navigator.push(
       context,
       MaterialPageRoute(
@@ -1332,6 +1348,8 @@ class UfvInstrumentsScreen extends StatelessWidget {
                         plantId: plant.id,
                         ufvId: ufv.id,
                         ufv: ufv,
+                        subgroup: title,
+                        equipmentKey: entry.key,
                       ),
                     ),
                   );

@@ -91,268 +91,285 @@ class FirebaseService {
     try {
       /// PARANOA ///
       var paranoaMegohmetro = Megohmetro(
-        // Transformador
+        // 1.0 Transformador
         transformador: DynamicGroup(
           readings: {
-            "At Bt": MeasurementValue(),
-            "At Massa": MeasurementValue(),
-            "Bt Massa": MeasurementValue(),
+            "At Bt": MeasurementValue(code: '1.0.1'),
+            "At Massa": MeasurementValue(code: '1.0.2'),
+            "Bt Massa": MeasurementValue(code: '1.0.3'),
           },
         ),
-        // Mufla - Poste
+        // 1.1 Terminação Mufla
         terminacaoMufla: {
           "Mufla Poste": PhaseGroup(
-            faseA: MeasurementValue(),
-            faseB: MeasurementValue(),
-            faseC: MeasurementValue(),
-            faseReserva: MeasurementValue(),
+            faseA: MeasurementValue(code: '1.1.1A'),
+            faseB: MeasurementValue(code: '1.1.1B'),
+            faseC: MeasurementValue(code: '1.1.1C'),
+            faseReserva: MeasurementValue(code: '1.1.1R'),
           ),
           "Mufla Entrada Cubículo": PhaseGroup(
-            faseA: MeasurementValue(),
-            faseB: MeasurementValue(),
-            faseC: MeasurementValue(),
-            faseReserva: MeasurementValue(),
+            faseA: MeasurementValue(code: '1.1.2A'),
+            faseB: MeasurementValue(code: '1.1.2B'),
+            faseC: MeasurementValue(code: '1.1.2C'),
+            faseReserva: MeasurementValue(code: '1.1.2R'),
           ),
           "Mufla Saída Cubículo": PhaseGroup(
-            faseA: MeasurementValue(),
-            faseB: MeasurementValue(),
-            faseC: MeasurementValue(),
-            faseReserva: MeasurementValue(),
+            faseA: MeasurementValue(code: '1.1.3A'),
+            faseB: MeasurementValue(code: '1.1.3B'),
+            faseC: MeasurementValue(code: '1.1.3C'),
+            faseReserva: MeasurementValue(code: '1.1.3R'),
           ),
           "Mufla Transformador": PhaseGroup(
-            faseA: MeasurementValue(),
-            faseB: MeasurementValue(),
-            faseC: MeasurementValue(),
-            faseReserva: MeasurementValue(),
+            faseA: MeasurementValue(code: '1.1.4A'),
+            faseB: MeasurementValue(code: '1.1.4B'),
+            faseC: MeasurementValue(code: '1.1.4C'),
+            faseReserva: MeasurementValue(code: '1.1.4R'),
           ),
         },
+        // 1.2 Para Raios
         paraRaios: {
           "Para Raios Poste": PhaseGroup(
-            faseA: MeasurementValue(),
-            faseB: MeasurementValue(),
-            faseC: MeasurementValue(),
+            faseA: MeasurementValue(code: '1.2.1A'),
+            faseB: MeasurementValue(code: '1.2.1B'),
+            faseC: MeasurementValue(code: '1.2.1C'),
           ),
           "Para Raios Entrada Cubículo": PhaseGroup(
-            faseA: MeasurementValue(),
-            faseB: MeasurementValue(),
-            faseC: MeasurementValue(),
+            faseA: MeasurementValue(code: '1.2.2A'),
+            faseB: MeasurementValue(code: '1.2.2B'),
+            faseC: MeasurementValue(code: '1.2.2C'),
           ),
           "Para Raios Saída Cubículo": PhaseGroup(
-            faseA: MeasurementValue(),
-            faseB: MeasurementValue(),
-            faseC: MeasurementValue(),
+            faseA: MeasurementValue(code: '1.2.3A'),
+            faseB: MeasurementValue(code: '1.2.3B'),
+            faseC: MeasurementValue(code: '1.2.3C'),
           ),
           "Para Raios Transformador": PhaseGroup(
-            faseA: MeasurementValue(),
-            faseB: MeasurementValue(),
-            faseC: MeasurementValue(),
+            faseA: MeasurementValue(code: '1.2.4A'),
+            faseB: MeasurementValue(code: '1.2.4B'),
+            faseC: MeasurementValue(code: '1.2.4C'),
           ),
         },
+        // 1.3 Seccionadora
         seccionadora: {
           "Seccionadora 01": PhaseGroup(
-            faseA: MeasurementValue(),
-            faseB: MeasurementValue(),
-            faseC: MeasurementValue(),
+            faseA: MeasurementValue(code: '1.3.1A'),
+            faseB: MeasurementValue(code: '1.3.1B'),
+            faseC: MeasurementValue(code: '1.3.1C'),
           ),
           "Seccionadora 02": PhaseGroup(
-            faseA: MeasurementValue(),
-            faseB: MeasurementValue(),
-            faseC: MeasurementValue(),
+            faseA: MeasurementValue(code: '1.3.2A'),
+            faseB: MeasurementValue(code: '1.3.2B'),
+            faseC: MeasurementValue(code: '1.3.2C'),
           ),
         },
+        // 1.4 Disjuntor Religador
         disjuntorReligador: {
           "Disjuntor Religador Aberto": PhaseGroup(
-            faseA: MeasurementValue(),
-            faseB: MeasurementValue(),
-            faseC: MeasurementValue(),
+            faseA: MeasurementValue(code: '1.4.1A'),
+            faseB: MeasurementValue(code: '1.4.1B'),
+            faseC: MeasurementValue(code: '1.4.1C'),
           ),
           "Disjuntor Religador Fechado": PhaseGroup(
-            faseA: MeasurementValue(),
-            faseB: MeasurementValue(),
-            faseC: MeasurementValue(),
+            faseA: MeasurementValue(code: '1.4.2A'),
+            faseB: MeasurementValue(code: '1.4.2B'),
+            faseC: MeasurementValue(code: '1.4.2C'),
           ),
         },
+        // 1.5 TC - Transformador de Corrente
         transformadorCorrente: PhaseGroup(
-          faseA: MeasurementValue(),
-          faseB: MeasurementValue(),
-          faseC: MeasurementValue(),
+          faseA: MeasurementValue(code: '1.5A'),
+          faseB: MeasurementValue(code: '1.5B'),
+          faseC: MeasurementValue(code: '1.5C'),
         ),
       );
 
       var paranoaMicro = Microohmimetro(
+        // 2.0 Transformador
         transformador: {
           "AT Delta-Estrela": DynamicGroup(
             readings: {
-              "H1-H3": MeasurementValue(),
-              "H2-H1": MeasurementValue(),
-              "H3-H2": MeasurementValue(),
+              "H1-H3": MeasurementValue(code: '2.0.1'),
+              "H2-H1": MeasurementValue(code: '2.0.2'),
+              "H3-H2": MeasurementValue(code: '2.0.3'),
             },
           ),
           "BT Delta-Estrela": DynamicGroup(
             readings: {
-              "X1-X0": MeasurementValue(),
-              "X2-X0": MeasurementValue(),
-              "X3-X0": MeasurementValue(),
+              "X1-X0": MeasurementValue(code: '2.0.4'),
+              "X2-X0": MeasurementValue(code: '2.0.5'),
+              "X3-X0": MeasurementValue(code: '2.0.6'),
             },
           ),
         },
+        // 2.1 Continuidade Malha
         continuidadeMalha: {
           "Continuidade Subestação": DynamicGroup(
             readings: {
-              "Cubículo/Malha": MeasurementValue(),
-              "Poste/Malha": MeasurementValue(),
-              "Cercamento/Malha": MeasurementValue(),
+              "Cubículo/Malha": MeasurementValue(code: '2.1.1'),
+              "Poste/Malha": MeasurementValue(code: '2.1.2'),
+              "Cercamento/Malha": MeasurementValue(code: '2.1.3'),
             },
           ),
           "Continuidade Skid": DynamicGroup(
             readings: {
-              "Transformador/Malha": MeasurementValue(),
-              "BEP/Malha": MeasurementValue(),
-              "Inversor/Malha": MeasurementValue(),
+              "Transformador/Malha": MeasurementValue(code: '2.1.4'),
+              "BEP/Malha": MeasurementValue(code: '2.1.5'),
+              "Inversor/Malha": MeasurementValue(code: '2.1.6'),
             },
           ),
         },
+        // 2.2 Seccionadora
         seccionadora: {
           "Seccionadora 01": PhaseGroup(
-            faseA: MeasurementValue(),
-            faseB: MeasurementValue(),
-            faseC: MeasurementValue(),
+            faseA: MeasurementValue(code: '2.2.1A'),
+            faseB: MeasurementValue(code: '2.2.1B'),
+            faseC: MeasurementValue(code: '2.2.1C'),
           ),
           "Seccionadora 02": PhaseGroup(
-            faseA: MeasurementValue(),
-            faseB: MeasurementValue(),
-            faseC: MeasurementValue(),
+            faseA: MeasurementValue(code: '2.2.2A'),
+            faseB: MeasurementValue(code: '2.2.2B'),
+            faseC: MeasurementValue(code: '2.2.2C'),
           ),
         },
+        // 2.3 Disjuntor Religador
         disjuntorReligador: {
           "Disjuntor Religador Fechado": PhaseGroup(
-            faseA: MeasurementValue(),
-            faseB: MeasurementValue(),
-            faseC: MeasurementValue(),
+            faseA: MeasurementValue(code: '2.3.1A'),
+            faseB: MeasurementValue(code: '2.3.1B'),
+            faseC: MeasurementValue(code: '2.3.1C'),
           ),
         },
       );
 
       var paranoaTtr = Ttr(
+        // 3.0 Transformador
         transformador: {
           "Delta-Estrela": DynamicGroup(
             readings: {
-              "H1-H3 / X1-X0": MeasurementValue(),
-              "H2-H1 / X2-X0": MeasurementValue(),
-              "H3-H2 / X3-X0": MeasurementValue(),
+              "H1-H3 / X1-X0": MeasurementValue(code: '3.0.1'),
+              "H2-H1 / X2-X0": MeasurementValue(code: '3.0.2'),
+              "H3-H2 / X3-X0": MeasurementValue(code: '3.0.3'),
             },
           ),
         },
+        // 3.1 TP - Transformador de Potencial
         transformadorPotencial: PhaseGroup(
-          faseA: MeasurementValue(),
-          faseB: MeasurementValue(),
-          faseC: MeasurementValue(),
+          faseA: MeasurementValue(code: '3.1A'),
+          faseB: MeasurementValue(code: '3.1B'),
+          faseC: MeasurementValue(code: '3.1C'),
         ),
+        // 3.2 TC - Transformador de Corrente
         transformadorCorrente: PhaseGroup(
-          faseA: MeasurementValue(),
-          faseB: MeasurementValue(),
-          faseC: MeasurementValue(),
+          faseA: MeasurementValue(code: '3.2A'),
+          faseB: MeasurementValue(code: '3.2B'),
+          faseC: MeasurementValue(code: '3.2C'),
         ),
       );
 
       var paranoaHipot = Hipot(
+        // 4.1 Cabo Média Tensão
         caboMediaTensao: {
           "Poste Cubículo": PhaseGroup(
-            faseA: MeasurementValue(),
-            faseB: MeasurementValue(),
-            faseC: MeasurementValue(),
-            faseReserva: MeasurementValue(),
+            faseA: MeasurementValue(code: '4.1.1A'),
+            faseB: MeasurementValue(code: '4.1.1B'),
+            faseC: MeasurementValue(code: '4.1.1C'),
+            faseReserva: MeasurementValue(code: '4.1.1R'),
           ),
           "Cubículo Transformador": PhaseGroup(
-            faseA: MeasurementValue(),
-            faseB: MeasurementValue(),
-            faseC: MeasurementValue(),
-            faseReserva: MeasurementValue(),
+            faseA: MeasurementValue(code: '4.1.2A'),
+            faseB: MeasurementValue(code: '4.1.2B'),
+            faseC: MeasurementValue(code: '4.1.2C'),
+            faseReserva: MeasurementValue(code: '4.1.2R'),
           ),
         },
       );
 
       var paranoaTerrometro = Terrometro(
+        // 5.0 Subestação
         subestacao: DynamicGroup(
           readings: {
-            "Cubículo Malha D=18/40": MeasurementValue(),
-            "Cubículo Malha D=19/40": MeasurementValue(),
-            "Cubículo Malha D=20/40": MeasurementValue(),
+            "Cubículo Malha D=18/40": MeasurementValue(code: '5.0A'),
+            "Cubículo Malha D=19/40": MeasurementValue(code: '5.0B'),
+            "Cubículo Malha D=20/40": MeasurementValue(code: '5.0C'),
           },
         ),
+        // 5.1 Transformador 01
         transformadores: {
           "Transformador 01": DynamicGroup(
             readings: {
-              "Transformador 01 - D=18/40": MeasurementValue(),
-              "Transformador 01 - D=19/40": MeasurementValue(),
-              "Transformador 01 - D=20/40": MeasurementValue(),
+              "Transformador 01 - D=18/40": MeasurementValue(code: '5.1A'),
+              "Transformador 01 - D=19/40": MeasurementValue(code: '5.1B'),
+              "Transformador 01 - D=20/40": MeasurementValue(code: '5.1C'),
             },
           ),
         },
       );
 
       var paranoaToquePasso = ToquePasso(
+        // 6.0 Subestação
         subestacao: {
           "Cubículo Proteção Geral": DynamicGroup(
             readings: {
-              "Toque": MeasurementValue(),
-              "Passo 1m": MeasurementValue(),
-              "Passo 5m": MeasurementValue(),
+              "Toque": MeasurementValue(code: '6.0.0'),
+              "Passo 1m": MeasurementValue(code: '6.0.0.A'),
+              "Passo 5m": MeasurementValue(code: '6.0.0.B'),
             },
           ),
           "Cubículo Proteção Medição": DynamicGroup(
             readings: {
-              "01 - Toque": MeasurementValue(),
-              "02 - Toque": MeasurementValue(),
-              "03 - Toque": MeasurementValue(),
+              "01 - Toque": MeasurementValue(code: '6.0.1'),
+              "02 - Toque": MeasurementValue(code: '6.0.2'),
+              "03 - Toque": MeasurementValue(code: '6.0.3'),
             },
           ),
         },
+        // 6.1 Cercamento / Abrigo
         cercamento: {
           "Portão Acesso": DynamicGroup(
             readings: {
-              "Toque": MeasurementValue(),
-              "Passo 1m": MeasurementValue(),
-              "Passo 5m": MeasurementValue(),
+              "Toque": MeasurementValue(code: '6.1.0'),
+              "Passo 1m": MeasurementValue(code: '6.1.0.A'),
+              "Passo 5m": MeasurementValue(code: '6.1.0.B'),
             },
           ),
           "Componentes": DynamicGroup(
             readings: {
-              "Alambrado - Toque": MeasurementValue(),
-              "Gradil Interno - Toque": MeasurementValue(),
-              "Componentes Metálicos - Toque": MeasurementValue(),
+              "Alambrado - Toque": MeasurementValue(code: '6.1.1'),
+              "Gradil Interno - Toque": MeasurementValue(code: '6.1.2'),
+              "Componentes Metálicos - Toque": MeasurementValue(code: '6.1.3'),
             },
           ),
         },
+        // 6.2 SKID
         skid: {
           "Transformador/QGBT": DynamicGroup(
             readings: {
-              "Toque": MeasurementValue(),
-              "Passo 1m": MeasurementValue(),
-              "Passo 5m": MeasurementValue(),
+              "Toque": MeasurementValue(code: '6.2.0'),
+              "Passo 1m": MeasurementValue(code: '6.2.0.A'),
+              "Passo 5m": MeasurementValue(code: '6.2.0.B'),
             },
           ),
           "Inversores": DynamicGroup(
             readings: {
-              "Toque": MeasurementValue(),
-              "Passo 1m": MeasurementValue(),
-              "Passo 5m": MeasurementValue(),
+              "Toque": MeasurementValue(code: '6.2.1'),
+              "Passo 1m": MeasurementValue(code: '6.2.1.A'),
+              "Passo 5m": MeasurementValue(code: '6.2.1.B'),
             },
           ),
           "Componentes Metálicos": DynamicGroup(
             readings: {
-              "QGBT - Toque": MeasurementValue(),
-              "Quadro Bt - Toque": MeasurementValue(),
-              "Container Metálico - Toque": MeasurementValue(),
-              "Cercamento UFV - Toque": MeasurementValue(),
-              "Estrutura Fixação - Toque": MeasurementValue(),
+              "QGBT - Toque": MeasurementValue(code: '6.2.2'),
+              "Quadro Bt - Toque": MeasurementValue(code: '6.2.3'),
+              "Container Metálico - Toque": MeasurementValue(code: '6.2.4'),
+              "Cercamento UFV - Toque": MeasurementValue(code: '6.2.5'),
+              "Estrutura Fixação - Toque": MeasurementValue(code: '6.2.6'),
             },
           ),
           "Módulos": DynamicGroup(
             readings: {
-              "Toque": MeasurementValue(),
-              "Passo 1m": MeasurementValue(),
-              "Passo 5m": MeasurementValue(),
+              "Toque": MeasurementValue(code: '6.2.7'),
+              "Passo 1m": MeasurementValue(code: '6.2.7.A'),
+              "Passo 5m": MeasurementValue(code: '6.2.7.B'),
             },
           ),
         },
@@ -397,41 +414,44 @@ class FirebaseService {
 
       /// PANAMA ///
       var panamaMegohmetro = Megohmetro(
+        // 1.0 Transformador
         transformador: DynamicGroup(
           readings: {
-            "At Bt": MeasurementValue(),
-            "At Massa": MeasurementValue(),
-            "Bt Massa": MeasurementValue(),
+            "At Bt": MeasurementValue(code: '1.0.1'),
+            "At Massa": MeasurementValue(code: '1.0.2'),
+            "Bt Massa": MeasurementValue(code: '1.0.3'),
           },
         ),
       );
 
       var panamaMicro = Microohmimetro(
+        // 2.0 Transformador
         transformador: {
           "AT Delta-Estrela": DynamicGroup(
             readings: {
-              "H1-H3": MeasurementValue(),
-              "H2-H1": MeasurementValue(),
-              "H3-H2": MeasurementValue(),
+              "H1-H3": MeasurementValue(code: '2.0.1'),
+              "H2-H1": MeasurementValue(code: '2.0.2'),
+              "H3-H2": MeasurementValue(code: '2.0.3'),
             },
           ),
           "BT Delta-Estrela": DynamicGroup(
             readings: {
-              "X1-X0": MeasurementValue(),
-              "X2-X0": MeasurementValue(),
-              "X3-X0": MeasurementValue(),
+              "X1-X0": MeasurementValue(code: '2.0.4'),
+              "X2-X0": MeasurementValue(code: '2.0.5'),
+              "X3-X0": MeasurementValue(code: '2.0.6'),
             },
           ),
         },
       );
 
       var panamaTtr = Ttr(
+        // 3.0 Transformador
         transformador: {
           "Delta-Estrela": DynamicGroup(
             readings: {
-              "H1-H3 / X1-X0": MeasurementValue(),
-              "H2-H1 / X2-X0": MeasurementValue(),
-              "H3-H2 / X3-X0": MeasurementValue(),
+              "H1-H3 / X1-X0": MeasurementValue(code: '3.0.1'),
+              "H2-H1 / X2-X0": MeasurementValue(code: '3.0.2'),
+              "H3-H2 / X3-X0": MeasurementValue(code: '3.0.3'),
             },
           ),
         },
